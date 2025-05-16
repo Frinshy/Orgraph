@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,8 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.input.pointer.pointerInput
@@ -143,8 +146,7 @@ fun InteractiveMindMap(
     onSelect: (MindMapNode?) -> Unit,
     onDrag: (MindMapNode, Offset) -> Unit
 ) {
-    val textMeasurer: androidx.compose.ui.text.TextMeasurer = rememberTextMeasurer()
-
+    val textMeasurer = rememberTextMeasurer()
     val textLayouts = remember(nodes) {
         nodes.flattened().associateWith { node ->
             val textStyle = TextStyle(
@@ -156,32 +158,80 @@ fun InteractiveMindMap(
         }
     }
 
-    Canvas(modifier = Modifier
-        .fillMaxSize()
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onTap = { offset ->
-                    val closest = nodes.flattened().findClosest(offset)
-                    onSelect(closest)
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+
+    val minScale = 0.5f
+    val maxScale = 3f
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, zoom, _ ->
+                    scale = (scale * zoom).coerceIn(minScale, maxScale)
+                    offset += pan
                 }
-            )
-        }
-        .pointerInput(Unit) {
-            detectDragGestures(
-                onDragStart = { offset ->
-                    val closest = nodes.flattened().findClosest(offset)
-                    onSelect(closest)
-                },
-                onDrag = { change, dragAmount ->
-                    selectedNode?.let {
-                        onDrag(it, dragAmount)
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { start ->
+                        val adjusted = (start - offset) / scale
+                        val closest = nodes.flattened().findClosest(adjusted)
+                        onSelect(closest)
+                    },
+                    onDrag = { change, dragAmount ->
+                        selectedNode?.let {
+                            val newPosition = it.position + dragAmount / scale
+                            // Clamp the position to keep the node within bounds
+                            val clampedX = newPosition.x.coerceIn(0f, size.width / scale)
+                            val clampedY = newPosition.y.coerceIn(0f, size.height / scale)
+                            it.position = Offset(clampedX, clampedY)
+                        }
+                        change.consume()
                     }
-                    change.consume()
+                )
+            }
+            .pointerInput(Unit) {
+                detectTapGestures { tapOffset ->
+                    val adjusted = (tapOffset - offset) / scale
+                    val closest = nodes.flattened()
+                        .filter { it.position.getDistance(adjusted) <= 40f } // Check if within node radius
+                        .minByOrNull { it.position.getDistance(adjusted) }
+                    onSelect(closest)
                 }
-            )
-        }
+            }
     ) {
-        drawNodesRecursive(nodes, selectedNode, textLayouts)
+        withTransform({
+            translate(offset.x, offset.y)
+            scale(scale, scale)
+        }) {
+            // Draw grid and nodes
+            val gridSpacing = 50f
+            val gridColor = Color.LightGray
+
+            val maxX = size.width / scale
+            val maxY = size.height / scale
+
+            for (x in 0..maxX.toInt() step gridSpacing.toInt()) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x.toFloat(), 0f),
+                    end = Offset(x.toFloat(), maxY),
+                    strokeWidth = 1f
+                )
+            }
+            for (y in 0..maxY.toInt() step gridSpacing.toInt()) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(0f, y.toFloat()),
+                    end = Offset(maxX, y.toFloat()),
+                    strokeWidth = 1f
+                )
+            }
+
+            drawNodesRecursive(nodes, selectedNode, textLayouts)
+        }
     }
 }
 

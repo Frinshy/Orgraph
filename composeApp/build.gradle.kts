@@ -36,21 +36,27 @@ kotlin {
     }
 }
 
-
-
 compose.desktop {
     application {
         mainClass = "de.frinshy.mindmap.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb, TargetFormat.AppImage)
             packageName = "MindMap"
             packageVersion = "1.0.0"
             windows {
                 shortcut = true
                 menuGroup = packageName
                 iconFile.set(project.file("src/desktopMain/resources/images/icon.ico"))
-                upgradeUuid = "f3b984e7-0c84-48c5-a010-f13870553d27"
+                upgradeUuid = "500fd089-aa35-4ca4-a640-e43d0d76e427"
+            }
+        }
+
+        buildTypes {
+            release {
+                proguard {
+                    configurationFiles.from(project.file("proguard-rules.pro"))
+                }
             }
         }
     }

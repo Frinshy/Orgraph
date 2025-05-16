@@ -1,5 +1,6 @@
 package de.frinshy.mindmap.screens
 
+            import androidx.compose.foundation.Image
             import androidx.compose.foundation.layout.*
             import androidx.compose.runtime.Composable
             import androidx.compose.ui.Alignment
@@ -10,8 +11,9 @@ package de.frinshy.mindmap.screens
             import com.konyaco.fluent.component.Text
             import com.konyaco.fluent.icons.Icons
             import com.konyaco.fluent.icons.regular.Info
+            import org.jetbrains.compose.resources.painterResource
 
-            @Composable
+@Composable
             fun AboutScreen() {
                 Box(
                     modifier = Modifier
@@ -22,12 +24,12 @@ package de.frinshy.mindmap.screens
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "About Icon",
+                        Image(
+                            painter = androidx.compose.ui.res.painterResource("images/icon.svg"),
+                            contentDescription = "App Icon",
                             modifier = Modifier
-                                .size(48.dp)
-                                .padding(end = 16.dp)
+                                .size(90.dp)
+                                .padding(end = 25.dp)
                         )
                         Column(
                             verticalArrangement = Arrangement.Center,
@@ -44,7 +46,7 @@ package de.frinshy.mindmap.screens
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Developed by FrinshHD",
+                                text = "Developed by Frinshy",
                                 fontSize = 16.sp
                             )
                         }

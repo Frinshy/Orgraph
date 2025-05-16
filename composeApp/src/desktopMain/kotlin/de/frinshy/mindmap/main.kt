@@ -20,7 +20,7 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         state = windowState,
         title = "MindMap",
-        icon = painterResource("images/icon.png")
+        icon = painterResource("images/icon.svg")
     ) {
         WindowStyle(
             isDarkTheme = isSystemInDarkTheme(),
