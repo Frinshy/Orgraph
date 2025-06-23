@@ -1,4 +1,4 @@
-package de.frinshy.mindmap.components
+package de.frinshhd.orgraph.components
 
 fun interface ComponentNavigator {
     fun navigate(componentItem: ComponentItem)

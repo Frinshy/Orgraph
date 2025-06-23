@@ -1,7 +1,6 @@
-package de.frinshy.mindmap.mindmap
+package de.frinshhd.orgraph.mindmap
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 
 data class MindMapNode(

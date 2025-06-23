@@ -1,4 +1,4 @@
-package de.frinshy.mindmap
+package de.frinshhd.orgraph
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment

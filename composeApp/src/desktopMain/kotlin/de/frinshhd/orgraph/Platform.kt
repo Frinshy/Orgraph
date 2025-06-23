@@ -1,4 +1,4 @@
-package de.frinshy.mindmap
+package de.frinshhd.orgraph
 
 class JVMPlatform {
     val name: String = "Java ${System.getProperty("java.version")}"

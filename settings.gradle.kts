@@ -1,4 +1,4 @@
-rootProject.name = "MindMap"
+rootProject.name = "Orgraph"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

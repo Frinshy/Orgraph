@@ -38,7 +38,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "de.frinshy.mindmap.MainKt"
+        mainClass = "de.frinshhd.orgraph.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb, TargetFormat.AppImage)

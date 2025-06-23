@@ -1,29 +1,19 @@
-package de.frinshy.mindmap
+package de.frinshhd.orgraph
 
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ModalDrawer
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.konyaco.fluent.Background
 import com.konyaco.fluent.FluentTheme
 import com.konyaco.fluent.animation.FluentDuration
 import com.konyaco.fluent.animation.FluentEasing
-import com.konyaco.fluent.background.Layer
 import com.konyaco.fluent.background.Mica
 import com.konyaco.fluent.component.*
 import com.konyaco.fluent.darkColors
@@ -32,18 +22,13 @@ import com.konyaco.fluent.icons.regular.Home
 import com.konyaco.fluent.icons.regular.Info
 import com.konyaco.fluent.icons.regular.Map
 import com.konyaco.fluent.icons.regular.Settings
-import com.konyaco.fluent.icons.regular.Window
 import com.konyaco.fluent.lightColors
-import com.konyaco.fluent.surface.Card
-import de.frinshy.mindmap.components.ComponentItem
-import de.frinshy.mindmap.components.ComponentNavigator
-import de.frinshy.mindmap.mindmap.MindMapNode
-import de.frinshy.mindmap.mindmap.MindMapUI
-import de.frinshy.mindmap.screens.AboutScreen
-import de.frinshy.mindmap.screens.HomeScreen
-import de.frinshy.mindmap.screens.SettingsScreen
-import org.jetbrains.skiko.currentSystemTheme
-import java.awt.Component
+import de.frinshhd.orgraph.components.ComponentItem
+import de.frinshhd.orgraph.components.ComponentNavigator
+import de.frinshhd.orgraph.mindmap.MindMapUI
+import de.frinshhd.orgraph.screens.AboutScreen
+import de.frinshhd.orgraph.screens.HomeScreen
+import de.frinshhd.orgraph.screens.SettingsScreen
 
 @Composable
 @Preview

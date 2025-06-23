@@ -1,4 +1,4 @@
-package de.frinshy.mindmap.components
+package de.frinshhd.orgraph.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector

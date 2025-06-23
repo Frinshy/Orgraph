@@ -1,4 +1,4 @@
-package de.frinshy.mindmap
+package de.frinshhd.orgraph
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

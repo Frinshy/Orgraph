@@ -1,4 +1,4 @@
-package de.frinshy.mindmap
+package de.frinshhd.orgraph
 
 class Greeting {
     private val platform = getPlatform()

@@ -1,4 +1,4 @@
-package de.frinshy.mindmap.screens
+package de.frinshhd.orgraph.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,9 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.konyaco.fluent.FluentTheme
 import com.konyaco.fluent.component.ComboBox
 import com.konyaco.fluent.component.Icon
@@ -29,16 +27,16 @@ fun SettingsScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // General Section
-        SettingsCategory(
+        NavCategory(
             "General", listOf(
-            SettingsItem("Language", Icons.Default.LocalLanguage) {
+            NavItem("Language", Icons.Default.LocalLanguage) {
                 ComboBox(
                     items = listOf("English", "German"),
                     selected = if (selectedLanguage == "English") 0 else 1,
                     onSelectionChange = { _, item -> selectedLanguage = item }
                 )
             },
-            SettingsItem("Theme", Icons.Default.DarkTheme) {
+            NavItem("Theme", Icons.Default.DarkTheme) {
                 var selectedTheme by remember { mutableStateOf("Default") }
                     ComboBox(
                         items = listOf("Default", "Dark", "Light"),
@@ -57,8 +55,8 @@ fun SettingsScreen() {
 
 
         // Appearance Section
-        SettingsCategory("Appearance", listOf(
-            SettingsItem("Theme", Icons.Default.Window) {
+        NavCategory("Appearance", listOf(
+            NavItem("Theme", Icons.Default.Window) {
                 Switcher(
                     checked = true,
                     onCheckStateChange = { },
@@ -72,7 +70,7 @@ fun SettingsScreen() {
 }
 
 @Composable
-fun SettingsCategory(title: String, items: List<SettingsItem>) {
+fun NavCategory(title: String, items: List<NavItem>) {
     val sectionTitleStyle = TextStyle(fontSize = FluentTheme.typography.subtitle.fontSize, fontWeight = FluentTheme.typography.subtitle.fontWeight)
 
     Column(
@@ -81,21 +79,21 @@ fun SettingsCategory(title: String, items: List<SettingsItem>) {
     ) {
         Text(text = title, style = sectionTitleStyle, modifier = Modifier.padding(bottom = 10.dp))
         items.forEach { item ->
-            SettingsItemCard(
+            NavItemCard(
                 item
             )
         }
     }
 }
 
-data class SettingsItem(
+data class NavItem(
     val text: String,
     val icon: ImageVector,
     val content: @Composable (() -> Unit) = {}
 )
 
 @Composable
-fun SettingsItemCard(settingsItem: SettingsItem) {
+fun NavItemCard(navItem: NavItem) {
     val cardTitleStyle = TextStyle(fontSize = FluentTheme.typography.body.fontSize, fontWeight = FluentTheme.typography.body.fontWeight)
 
     Card(
@@ -110,13 +108,13 @@ fun SettingsItemCard(settingsItem: SettingsItem) {
         ) {
             Icon(
                 modifier = Modifier.size(30.dp).padding(end = 10.dp),
-                imageVector = settingsItem.icon,
-                contentDescription = "${settingsItem.text} Icon",
+                imageVector = navItem.icon,
+                contentDescription = "${navItem.text} Icon",
             )
-            Text(text = settingsItem.text, style = cardTitleStyle)
+            Text(text = navItem.text, style = cardTitleStyle)
             Spacer(modifier = Modifier.weight(1f))
             Box(modifier = Modifier.padding(end = 8.dp)) {
-                settingsItem.content()
+                navItem.content()
             }
         }
     }
