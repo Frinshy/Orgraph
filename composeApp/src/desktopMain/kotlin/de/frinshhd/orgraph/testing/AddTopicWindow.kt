@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -20,7 +21,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.*
@@ -38,7 +38,6 @@ import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
 import kotlin.math.cos
-import kotlin.math.max
 import kotlin.math.sin
 
 data class TopicNode(
@@ -230,29 +229,21 @@ fun TopicNodeEditor(
 fun MindMapNodeContent(
     node: TopicNode,
     scale: Float,
+    isMainNode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val textMeasurer = rememberTextMeasurer()
-    val nodeTextLayout = textMeasurer.measure(
-        text = node.name,
-        style = TextStyle(
-            color = Color.Black,
-            fontSize = 16.sp * scale,
-            fontWeight = FontWeight.Bold
-        )
-    )
-    val paddingH = (20f * scale).toDp()
-    val paddingV = (12f * scale).toDp()
-    val nodeWidth = (max(nodeTextLayout.size.width.toFloat(), node.image?.width?.toFloat() ?: 0f) + paddingH.value * 2).dp
+    val paddingH = 8f.toDp()
+    val paddingV = 8f.toDp()
+
     Column(
         modifier = modifier
-            .width(nodeWidth)
-            .wrapContentHeight()
-            .padding(horizontal = paddingH, vertical = paddingV)
             .background(
                 color = Color(0xFF90CAF9),
                 shape = MaterialTheme.shapes.medium
-            ),
+            )
+            .padding(horizontal = paddingH, vertical = paddingV)
+            .wrapContentWidth(Alignment.CenterHorizontally)
+            .wrapContentHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (node.image != null) {
@@ -260,15 +251,16 @@ fun MindMapNodeContent(
                 bitmap = node.image,
                 contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .align(Alignment.CenterHorizontally)
+                    .heightIn(max = 80.dp)
+                    .clip(MaterialTheme.shapes.medium)
             )
             Spacer(Modifier.height(8.dp))
         }
         Text(
             text = node.name,
             fontSize = 16.sp * scale,
-            fontWeight = FontWeight.Bold,
+            fontWeight = if (isMainNode) FontWeight.Bold else FontWeight.Normal,
             color = Color.Black,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -401,7 +393,7 @@ fun MindMapNodeAligned(
                 }
             }
     ) {
-        MindMapNodeContent(node = node, scale = 1f)
+        MindMapNodeContent(node = node, scale = 1f, isMainNode = (depth == 0))
     }
 }
 
