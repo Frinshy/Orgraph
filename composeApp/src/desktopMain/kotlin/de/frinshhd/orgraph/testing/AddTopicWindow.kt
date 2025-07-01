@@ -259,7 +259,9 @@ fun MindMapNodeContent(
             Image(
                 bitmap = node.image,
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
             )
             Spacer(Modifier.height(8.dp))
         }
@@ -267,7 +269,8 @@ fun MindMapNodeContent(
             text = node.name,
             fontSize = 16.sp * scale,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
 }
@@ -305,11 +308,53 @@ fun MindMapNodeAligned(
     nodeCenters: MutableMap<TopicNode, Offset>
 ) {
     val childCount = node.children.size
-    val childRadius = 220f * scale + nodeRadius
-    val angleStep = if (childCount > 0) spread / childCount else 0f
     var nodeSize by remember { mutableStateOf(IntSize.Zero) }
     val baseX = x
     val baseY = y
+
+    // --- Dynamic child radius to avoid collisions ---
+    // Only apply for the main node (depth == 0)
+    var childRadius = 220f * scale + nodeRadius
+    val angleStep = if (childCount > 0) spread / childCount else 0f
+    val childNodeSizes = remember { mutableStateListOf<IntSize>() }
+    val mainNodeSize = nodeSize
+    val maxAttempts = 20
+    var collisionDetected: Boolean
+    var attempt = 0
+    do {
+        collisionDetected = false
+        val childCenters = node.children.mapIndexed { i, _ ->
+            val theta = Math.toRadians((angle + angleStep * i - spread / 2 + angleStep / 2).toDouble())
+            val childX = baseX + childRadius * cos(theta).toFloat()
+            val childY = baseY + childRadius * sin(theta).toFloat()
+            Offset(childX, childY)
+        }
+        if (depth == 0 && mainNodeSize.width > 0 && mainNodeSize.height > 0 && childNodeSizes.size == childCount) {
+            for (i in 0 until childCount) {
+                val childCenter = childCenters[i]
+                val childSize = childNodeSizes[i]
+                val childRect = androidx.compose.ui.geometry.Rect(
+                    childCenter.x,
+                    childCenter.y,
+                    childCenter.x + childSize.width,
+                    childCenter.y + childSize.height
+                )
+                val mainRect = androidx.compose.ui.geometry.Rect(
+                    baseX,
+                    baseY,
+                    baseX + mainNodeSize.width,
+                    baseY + mainNodeSize.height
+                )
+                if (childRect.overlaps(mainRect)) {
+                    collisionDetected = true
+                    break
+                }
+            }
+        }
+        if (collisionDetected) childRadius += 40f * scale
+        attempt++
+    } while (collisionDetected && attempt < maxAttempts)
+
     // Draw lines from this node to its children (behind all nodes)
     if (node.children.isNotEmpty() && nodeCenters.containsKey(node) && node.children.all { nodeCenters.containsKey(it) }) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -349,6 +394,11 @@ fun MindMapNodeAligned(
                     baseX + nodeSize.width / 2f,
                     baseY + nodeSize.height / 2f
                 )
+                if (depth == 0) {
+                    // Store child node sizes for collision detection
+                    childNodeSizes.clear()
+                    childNodeSizes.addAll(node.children.map { _ -> coordinates.size })
+                }
             }
     ) {
         MindMapNodeContent(node = node, scale = 1f)
