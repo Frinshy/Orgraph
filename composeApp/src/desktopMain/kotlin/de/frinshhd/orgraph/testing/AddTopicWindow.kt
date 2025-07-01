@@ -272,6 +272,25 @@ fun MindMapNodeContent(
     }
 }
 
+/**
+ * Recursively draws a mind map node, its connecting lines, and its children.
+ *
+ * The drawing order is:
+ *   1. Draw lines from this node to its children (behind all nodes)
+ *   2. Draw all child nodes (recursively)
+ *   3. Draw this node's content (on top)
+ *
+ * @param node The topic node to render
+ * @param x The x position (top-left) for this node
+ * @param y The y position (top-left) for this node
+ * @param nodeRadius The base radius for child placement
+ * @param angle The starting angle for child placement
+ * @param spread The angular spread for child placement
+ * @param depth The current depth in the tree
+ * @param textMeasurer Used for text layout
+ * @param scale The scale factor for layout
+ * @param nodeCenters Shared map to store each node's center after measurement
+ */
 @Composable
 fun MindMapNodeAligned(
     node: TopicNode,
@@ -282,7 +301,8 @@ fun MindMapNodeAligned(
     spread: Float,
     depth: Int,
     textMeasurer: TextMeasurer,
-    scale: Float
+    scale: Float,
+    nodeCenters: MutableMap<TopicNode, Offset>
 ) {
     val childCount = node.children.size
     val childRadius = 220f * scale + nodeRadius
@@ -290,50 +310,48 @@ fun MindMapNodeAligned(
     var nodeSize by remember { mutableStateOf(IntSize.Zero) }
     val baseX = x
     val baseY = y
-    // Calculate child positions (do not apply scale to position, only to node size)
-    val childCenters = node.children.mapIndexed { i, _ ->
-        val theta = Math.toRadians((angle + angleStep * i - spread / 2 + angleStep / 2).toDouble())
-        val childX = baseX + childRadius * cos(theta).toFloat()
-        val childY = baseY + childRadius * sin(theta).toFloat()
-        Offset(childX, childY)
-    }
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopStart
-    ) {
-        // Draw lines to children
+    // Draw lines from this node to its children (behind all nodes)
+    if (node.children.isNotEmpty() && nodeCenters.containsKey(node) && node.children.all { nodeCenters.containsKey(it) }) {
         Canvas(modifier = Modifier.fillMaxSize()) {
+            val parentCenter = nodeCenters[node]!!
+            val childCenters = node.children.map { nodeCenters[it]!! }
             drawMindMapNodes(
-                parent = Offset(baseX + nodeSize.width / 2f, baseY + nodeSize.height / 2f),
+                parent = parentCenter,
                 children = childCenters
             )
         }
-        // Draw node content (apply scale only to node size, not position)
-        Box(
-            modifier = Modifier
-                .absoluteOffset { IntOffset(baseX.toInt(), baseY.toInt()) }
-                // Remove scale from graphicsLayer so node size stays constant when zooming
-                .onGloballyPositioned { coordinates ->
-                    nodeSize = coordinates.size
-                }
-        ) {
-            MindMapNodeContent(node = node, scale = 1f) // Always use scale = 1f for constant node size
-        }
     }
-    // Draw children
+    // Draw all child nodes recursively
     node.children.forEachIndexed { i, child ->
-        val childOffset = childCenters.getOrNull(i) ?: return@forEachIndexed
+        val theta = Math.toRadians((angle + angleStep * i - spread / 2 + angleStep / 2).toDouble())
+        val childX = baseX + childRadius * cos(theta).toFloat()
+        val childY = baseY + childRadius * sin(theta).toFloat()
         MindMapNodeAligned(
             node = child,
-            x = childOffset.x,
-            y = childOffset.y,
+            x = childX,
+            y = childY,
             nodeRadius = nodeRadius,
             angle = angle + angleStep * i - spread / 2 + angleStep / 2,
             spread = 120f,
             depth = depth + 1,
             textMeasurer = textMeasurer,
-            scale = scale
+            scale = scale,
+            nodeCenters = nodeCenters
         )
+    }
+    // Draw this node's content and record its center after measurement
+    Box(
+        modifier = Modifier
+            .absoluteOffset { IntOffset(baseX.toInt(), baseY.toInt()) }
+            .onGloballyPositioned { coordinates ->
+                nodeSize = coordinates.size
+                nodeCenters[node] = Offset(
+                    baseX + nodeSize.width / 2f,
+                    baseY + nodeSize.height / 2f
+                )
+            }
+    ) {
+        MindMapNodeContent(node = node, scale = 1f)
     }
 }
 
@@ -363,9 +381,8 @@ fun MindMapView(topics: List<TopicNode>) {
     var lastOffset by remember { mutableStateOf(Offset.Zero) }
     var isDragging by remember { mutableStateOf(false) }
     var dragStart by remember { mutableStateOf(Offset.Zero) }
-    // Remove zoom: scale is fixed
     val scale = 1f
-
+    val nodeCenters = remember { mutableStateMapOf<TopicNode, Offset>() }
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -373,7 +390,6 @@ fun MindMapView(topics: List<TopicNode>) {
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent()
-                        // --- Drag to pan ---
                         if (event.changes.any { it.pressed }) {
                             val dragChange = event.changes.firstOrNull { it.pressed }
                             if (dragChange != null) {
@@ -407,7 +423,8 @@ fun MindMapView(topics: List<TopicNode>) {
                 spread = 360f,
                 depth = 0,
                 textMeasurer = textMeasurer,
-                scale = scale
+                scale = scale,
+                nodeCenters = nodeCenters
             )
         }
     }
