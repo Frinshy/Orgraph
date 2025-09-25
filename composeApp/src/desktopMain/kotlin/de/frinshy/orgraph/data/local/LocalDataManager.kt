@@ -1,15 +1,13 @@
 package de.frinshy.orgraph.data.local
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import de.frinshy.orgraph.data.config.ConfigManager
 import de.frinshy.orgraph.data.models.School
 import de.frinshy.orgraph.data.models.Scope
 import de.frinshy.orgraph.data.models.Teacher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.prefs.Preferences
 
 @Serializable
 data class SerializableScope(
@@ -39,49 +37,44 @@ data class SerializableSchool(
 )
 
 class LocalDataManager {
-    private val prefs = Preferences.userNodeForPackage(LocalDataManager::class.java)
+    private val configManager = ConfigManager()
     private val json = Json { 
         prettyPrint = true
         ignoreUnknownKeys = true
     }
-    private val schoolKey = "orgraph_school_data"
+    private val schoolFileName = "school_data.json"
 
     suspend fun saveSchool(school: School) {
-        withContext(Dispatchers.IO) {
-            try {
-                val serializableSchool = school.toSerializable()
-                val jsonString = json.encodeToString(serializableSchool)
-                prefs.put(schoolKey, jsonString)
-                prefs.flush()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        try {
+            val serializableSchool = school.toSerializable()
+            configManager.saveConfig(schoolFileName, serializableSchool, SerializableSchool.serializer())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Failed to save school data: ${e.message}")
         }
     }
 
     suspend fun loadSchool(): School? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val jsonString = prefs.get(schoolKey, null)
-                if (jsonString != null) {
-                    val serializableSchool = json.decodeFromString<SerializableSchool>(jsonString)
-                    serializableSchool.toSchool()
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
+        return try {
+            val serializableSchool = configManager.loadConfig(schoolFileName, SerializableSchool.serializer())
+            serializableSchool?.toSchool()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Failed to load school data: ${e.message}")
+            null
         }
     }
 
     suspend fun clearData() {
-        withContext(Dispatchers.IO) {
-            prefs.remove(schoolKey)
-            prefs.flush()
+        try {
+            configManager.deleteConfig(schoolFileName)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Failed to clear school data: ${e.message}")
         }
     }
+    
+    fun getDataDirectory(): String = configManager.getConfigDirectory()
 }
 
 // Extension functions for conversion
@@ -132,6 +125,8 @@ private fun SerializableTeacher.toTeacher(): Teacher {
     return Teacher(
         id = id,
         name = name,
+        subtitle = "", // LocalDataManager doesn't store subtitles
+        backgroundImage = "", // LocalDataManager doesn't store background images
         email = email,
         phone = phone,
         scopes = finalScopes.map { it.toScope() },
@@ -141,7 +136,53 @@ private fun SerializableTeacher.toTeacher(): Teacher {
 }
 
 private fun SerializableScope.toScope(): Scope {
+    // Safe color conversion with comprehensive validation
+    val safeColor = try {
+        // First validate the color value range
+        val colorValue = when {
+            color == 0L -> 0xFF6750A4UL // Default purple if zero
+            color < 0 -> {
+                // For negative values, interpret as unsigned
+                val unsignedValue = color.toULong()
+                // Validate the unsigned value is in valid ARGB range
+                if (unsignedValue > 0xFFFFFFFFUL) {
+                    println("Warning: Color value $color ($unsignedValue) for scope $name is out of valid ARGB range, using default purple")
+                    0xFF6750A4UL
+                } else {
+                    unsignedValue
+                }
+            }
+            else -> {
+                // Positive values
+                val unsignedValue = color.toULong()
+                if (unsignedValue > 0xFFFFFFFFUL) {
+                    println("Warning: Color value $color for scope $name is out of valid ARGB range, using default purple")
+                    0xFF6750A4UL
+                } else {
+                    unsignedValue
+                }
+            }
+        }
+        
+        // Create the color and test if it's valid by accessing properties
+        val testColor = Color(colorValue)
+        
+        // Test color validity by checking if we can convert to ARGB without error
+        @Suppress("UNUSED_VARIABLE")
+        val argb = testColor.toArgb()
+        
+        testColor
+    } catch (e: Exception) {
+        println("Warning: Failed to create valid color from value $color for scope $name. Error: ${e.message}. Using default purple")
+        Color(0xFF6750A4UL) // Fallback to default purple
+    }
+    
     return Scope(
-        id = id, name = name, color = Color(color.toULong()), description = description
+        id = id, 
+        name = name, 
+        subtitle = "", // LocalDataManager doesn't store subtitles
+        backgroundImage = "", // LocalDataManager doesn't store background images
+        color = safeColor, 
+        description = description
     )
 }

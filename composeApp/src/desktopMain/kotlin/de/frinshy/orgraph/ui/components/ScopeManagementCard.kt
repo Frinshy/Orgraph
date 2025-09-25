@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import de.frinshy.orgraph.data.models.Scope
 fun ScopeManagementCard(
     scopes: List<Scope>,
     onAddScope: () -> Unit,
+    onEditScope: (Scope) -> Unit,
     onDeleteScope: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -61,11 +63,13 @@ fun ScopeManagementCard(
                 )
             } else {
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
                     items(scopes) { scope ->
                         ScopeChip(
                             scope = scope,
+                            onEdit = { onEditScope(scope) },
                             onDelete = { onDeleteScope(scope.id) }
                         )
                     }
@@ -78,39 +82,87 @@ fun ScopeManagementCard(
 @Composable
 private fun ScopeChip(
     scope: Scope,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.small,
+        modifier = modifier.widthIn(min = 200.dp),
+        shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 0.dp
+        tonalElevation = 2.dp
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            SubjectIndicator(
-                color = scope.color,
-                size = 12.dp
-            )
-            
-            Text(
-                text = scope.name,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(20.dp)
+            // Header with color indicator and actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete ${scope.name}",
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.error
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SubjectIndicator(
+                        color = scope.color,
+                        size = 16.dp
+                    )
+                    
+                    Text(
+                        text = scope.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit ${scope.name}",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete ${scope.name}",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+            
+            // Subtitle and description
+            if (scope.subtitle.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = scope.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            if (scope.description.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = scope.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
                 )
             }
         }

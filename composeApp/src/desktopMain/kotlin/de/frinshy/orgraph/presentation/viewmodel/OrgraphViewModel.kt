@@ -3,6 +3,9 @@ package de.frinshy.orgraph.presentation.viewmodel
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.frinshy.orgraph.data.config.AppSettings
+import de.frinshy.orgraph.data.config.ConfigManager
+import de.frinshy.orgraph.data.io.ImportExportManager
 import de.frinshy.orgraph.data.models.School
 import de.frinshy.orgraph.data.models.Scope
 import de.frinshy.orgraph.data.models.Teacher
@@ -12,11 +15,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.*
-import java.util.prefs.Preferences
 
 class OrgraphViewModel : ViewModel() {
     private val repository = SchoolRepository()
-    private val prefs = Preferences.userNodeForPackage(OrgraphViewModel::class.java)
+    private val configManager = ConfigManager()
+    private val importExportManager = ImportExportManager()
     
     val school: StateFlow<School> = repository.school
     
@@ -32,17 +35,25 @@ class OrgraphViewModel : ViewModel() {
     private val _showAddScopeDialog = MutableStateFlow(false)
     val showAddScopeDialog: StateFlow<Boolean> = _showAddScopeDialog.asStateFlow()
     
-    private val _selectedTeacher = MutableStateFlow<Teacher?>(null)
-    val selectedTeacher: StateFlow<Teacher?> = _selectedTeacher.asStateFlow()
+    private val _showEditScopeDialog = MutableStateFlow(false)
+    val showEditScopeDialog: StateFlow<Boolean> = _showEditScopeDialog.asStateFlow()
     
-    // Theme management
-    private val _isDarkTheme = MutableStateFlow(prefs.getBoolean("dark_theme", false))
+    private val _selectedScope = MutableStateFlow<Scope?>(null)
+    val selectedScope: StateFlow<Scope?> = _selectedScope.asStateFlow()
+
+    private val _selectedTeacher = MutableStateFlow<Teacher?>(null)
+    val selectedTeacher: StateFlow<Teacher?> = _selectedTeacher.asStateFlow()    // Theme management
+    private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme.asStateFlow()
     
     init {
-        // Initialize data from persistent storage
+        // Initialize data and settings from persistent storage
         viewModelScope.launch {
             repository.initializeData()
+            loadSettings()
+            
+            // Debug: Print config directory location
+            println("Orgraph config directory: ${getConfigDirectory()}")
         }
     }
     
@@ -52,6 +63,9 @@ class OrgraphViewModel : ViewModel() {
     
     fun switchView(viewMode: ViewMode) {
         _selectedView.value = viewMode
+        viewModelScope.launch {
+            saveSettings()
+        }
     }
     
     fun showAddTeacherDialog() {
@@ -80,12 +94,24 @@ class OrgraphViewModel : ViewModel() {
         _showAddScopeDialog.value = false
     }
     
+    fun showEditScopeDialog(scope: Scope) {
+        _selectedScope.value = scope
+        _showEditScopeDialog.value = true
+    }
+    
+    fun hideEditScopeDialog() {
+        _selectedScope.value = null
+        _showEditScopeDialog.value = false
+    }
+    
     fun selectTeacher(teacher: Teacher?) {
         _selectedTeacher.value = teacher
     }
     
     fun addTeacher(
         name: String,
+        subtitle: String,
+        backgroundImage: String,
         email: String,
         phone: String,
         scopes: List<Scope>,
@@ -95,6 +121,8 @@ class OrgraphViewModel : ViewModel() {
         val teacher = Teacher(
             id = UUID.randomUUID().toString(),
             name = name,
+            subtitle = subtitle,
+            backgroundImage = backgroundImage,
             email = email,
             phone = phone,
             scopes = scopes,
@@ -121,10 +149,12 @@ class OrgraphViewModel : ViewModel() {
         }
     }
     
-    fun addScope(name: String, color: Color, description: String) {
+    fun addScope(name: String, subtitle: String, backgroundImage: String, color: Color, description: String) {
         val scope = Scope(
             id = UUID.randomUUID().toString(),
             name = name,
+            subtitle = subtitle,
+            backgroundImage = backgroundImage,
             color = color,
             description = description
         )
@@ -141,31 +171,91 @@ class OrgraphViewModel : ViewModel() {
         }
     }
     
+    // Settings management functions
+    private suspend fun loadSettings() {
+        try {
+            val settings = configManager.loadConfig("app_settings.json", AppSettings.serializer())
+                ?: AppSettings() // Use default settings if file doesn't exist
+            
+            _isDarkTheme.value = settings.isDarkTheme
+            _selectedView.value = when (settings.lastViewMode) {
+                "MINDMAP" -> ViewMode.MINDMAP
+                else -> ViewMode.LIST
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Failed to load settings: ${e.message}")
+        }
+    }
+    
+    private suspend fun saveSettings() {
+        try {
+            val settings = AppSettings(
+                isDarkTheme = _isDarkTheme.value,
+                lastViewMode = when (_selectedView.value) {
+                    ViewMode.MINDMAP -> "MINDMAP"
+                    ViewMode.LIST -> "LIST"
+                }
+            )
+            configManager.saveConfig("app_settings.json", settings, AppSettings.serializer())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Failed to save settings: ${e.message}")
+        }
+    }
+    
     // Theme management functions
     fun toggleTheme() {
         val newTheme = !_isDarkTheme.value
         _isDarkTheme.value = newTheme
-        prefs.putBoolean("dark_theme", newTheme)
-        try {
-            prefs.flush()
-        } catch (e: Exception) {
-            // Silently ignore flush errors
+        viewModelScope.launch {
+            saveSettings()
         }
     }
     
     fun setDarkTheme(isDark: Boolean) {
         _isDarkTheme.value = isDark
-        prefs.putBoolean("dark_theme", isDark)
-        try {
-            prefs.flush()
-        } catch (e: Exception) {
-            // Silently ignore flush errors
+        viewModelScope.launch {
+            saveSettings()
         }
     }
+    
+    fun getConfigDirectory(): String = configManager.getConfigDirectory()
     
     fun updateScope(scope: Scope) {
         viewModelScope.launch {
             repository.updateScope(scope)
+            hideEditScopeDialog()
         }
     }
+    
+    // Import/Export functions
+    suspend fun exportToFile(filePath: String): Result<String> {
+        return importExportManager.exportToFile(school.value, filePath)
+    }
+    
+    suspend fun importFromFile(filePath: String): Result<String> {
+        return try {
+            val result = importExportManager.importFromFile(filePath)
+            result.fold(
+                onSuccess = { importResult ->
+                    // Apply imported data
+                    repository.saveSchool(importResult.school)
+                    
+                    Result.success("Configuration imported successfully from: $filePath")
+                },
+                onFailure = { error ->
+                    Result.failure(error)
+                }
+            )
+        } catch (e: Exception) {
+            Result.failure(Exception("Import failed: ${e.message}"))
+        }
+    }
+    
+    suspend fun quickExport(): Result<String> {
+        return importExportManager.quickExport(school.value)
+    }
+    
+    suspend fun getAvailableBackups() = importExportManager.getAvailableBackups()
 }

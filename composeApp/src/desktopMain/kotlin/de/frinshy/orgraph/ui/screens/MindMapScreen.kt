@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,6 +18,9 @@ import de.frinshy.orgraph.data.models.School
 import de.frinshy.orgraph.presentation.viewmodel.OrgraphViewModel
 import de.frinshy.orgraph.ui.components.*
 import kotlinx.coroutines.launch
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +56,58 @@ fun MindMapScreen(
                         contentDescription = "Export mind map as PNG"
                     )
                 }
+                
+                // Export config button
+                OrgraphIconButton(
+                    onClick = { 
+                        coroutineScope.launch {
+                            val fileDialog = FileDialog(null as Frame?, "Export Orgraph Configuration", FileDialog.SAVE)
+                            fileDialog.file = "orgraph_backup.json"
+                            fileDialog.isVisible = true
+                            
+                            val fileName = fileDialog.file
+                            val directory = fileDialog.directory
+                            
+                            if (fileName != null && directory != null) {
+                                val filePath = File(directory, fileName).absolutePath
+                                val result = viewModel.exportToFile(filePath)
+                                result.onSuccess { message ->
+                                    println("Export successful: $message")
+                                }.onFailure { error ->
+                                    println("Export failed: ${error.message}")
+                                }
+                            }
+                        }
+                    },
+                    icon = Icons.Default.FileDownload,
+                    contentDescription = "Export configuration"
+                )
+                
+                // Import config button
+                OrgraphIconButton(
+                    onClick = { 
+                        coroutineScope.launch {
+                            val fileDialog = FileDialog(null as Frame?, "Import Orgraph Configuration", FileDialog.LOAD)
+                            fileDialog.file = "*.json"
+                            fileDialog.isVisible = true
+                            
+                            val fileName = fileDialog.file
+                            val directory = fileDialog.directory
+                            
+                            if (fileName != null && directory != null) {
+                                val filePath = File(directory, fileName).absolutePath
+                                val result = viewModel.importFromFile(filePath)
+                                result.onSuccess { message ->
+                                    println("Import successful: $message")
+                                }.onFailure { error ->
+                                    println("Import failed: ${error.message}")
+                                }
+                            }
+                        }
+                    },
+                    icon = Icons.Default.FileUpload,
+                    contentDescription = "Import configuration"
+                )
                 
                 // Theme toggle button
                 val isDarkTheme by viewModel.isDarkTheme.collectAsState()
@@ -104,9 +157,10 @@ fun MindMapScreen(
     if (showAddDialog) {
         AddTeacherDialog(
             availableScopes = school.scopes,
+            configDirectory = viewModel.getConfigDirectory(),
             onDismiss = { viewModel.hideAddTeacherDialog() },
-            onAddTeacher = { name, email, phone, scopes, description, experience ->
-                viewModel.addTeacher(name, email, phone, scopes, description, experience)
+            onAddTeacher = { name, subtitle, backgroundImage, email, phone, scopes, description, experience ->
+                viewModel.addTeacher(name, subtitle, backgroundImage, email, phone, scopes, description, experience)
             }
         )
     }
@@ -117,6 +171,7 @@ fun MindMapScreen(
             EditTeacherDialog(
                 teacher = teacher,
                 availableScopes = school.scopes,
+                configDirectory = viewModel.getConfigDirectory(),
                 onDismiss = { viewModel.hideEditTeacherDialog() },
                 onUpdateTeacher = { updatedTeacher ->
                     viewModel.updateTeacher(updatedTeacher)
@@ -129,10 +184,27 @@ fun MindMapScreen(
     val showAddScopeDialog by viewModel.showAddScopeDialog.collectAsState()
     if (showAddScopeDialog) {
         AddScopeDialog(
+            configDirectory = viewModel.getConfigDirectory(),
             onDismiss = { viewModel.hideAddScopeDialog() },
-            onAddScope = { name, color, description ->
-                viewModel.addScope(name, color, description)
+            onAddScope = { name, subtitle, backgroundImage, color, description ->
+                viewModel.addScope(name, subtitle, backgroundImage, color, description)
             }
         )
+    }
+    
+    // Edit Scope Dialog
+    val showEditScopeDialog by viewModel.showEditScopeDialog.collectAsState()
+    val selectedScope by viewModel.selectedScope.collectAsState()
+    if (showEditScopeDialog) {
+        selectedScope?.let { scope ->
+            EditScopeDialog(
+                scope = scope,
+                configDirectory = viewModel.getConfigDirectory(),
+                onDismiss = { viewModel.hideEditScopeDialog() },
+                onUpdateScope = { updatedScope ->
+                    viewModel.updateScope(updatedScope)
+                }
+            )
+        }
     }
 }

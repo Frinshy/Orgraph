@@ -14,7 +14,7 @@ class SchoolRepository {
     private val _school = MutableStateFlow(
         School(
             id = "1",
-            name = "Orgraph Academy",
+            name = "Orgraph",
             address = "123 Education Street"
         )
     )
@@ -24,6 +24,10 @@ class SchoolRepository {
         val savedSchool = localDataManager.loadSchool()
         if (savedSchool != null) {
             _school.value = savedSchool
+            println("Loaded school data from: ${localDataManager.getDataDirectory()}")
+        } else {
+            println("No saved school data found. Using default data.")
+            println("Data will be saved to: ${localDataManager.getDataDirectory()}")
         }
     }
     
@@ -95,11 +99,16 @@ class SchoolRepository {
         localDataManager.saveSchool(newSchool)
     }
     
+    suspend fun saveSchool(school: School) {
+        _school.value = school
+        localDataManager.saveSchool(school)
+    }
+    
     suspend fun clearAllData() {
         localDataManager.clearData()
         _school.value = School(
             id = "1",
-            name = "Orgraph Academy",
+            name = "Orgraph",
             address = "123 Education Street"
         )
     }

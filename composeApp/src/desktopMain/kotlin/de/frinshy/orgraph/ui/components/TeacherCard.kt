@@ -61,6 +61,15 @@ fun TeacherCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                        if (teacher.subtitle.isNotBlank()) {
+                            Text(
+                                text = teacher.subtitle,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                         Text(
                             text = "${teacher.scopes.size} scopes • ${teacher.experience} years exp.",
                             style = MaterialTheme.typography.bodySmall,

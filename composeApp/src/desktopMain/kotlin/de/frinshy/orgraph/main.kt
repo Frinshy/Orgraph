@@ -26,7 +26,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         state = windowState,
-        title = "Orgraph - School Teacher Management",
+        title = "Orgraph",
         resizable = true,
         icon = BitmapPainter(useResource("images/icon.png", ::loadImageBitmap))
     ) {

@@ -10,17 +10,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import de.frinshy.orgraph.data.models.Teacher
 import de.frinshy.orgraph.data.models.Scope
+import de.frinshy.orgraph.data.models.Teacher
+import de.frinshy.orgraph.presentation.components.CompactImageSelector
+import de.frinshy.orgraph.util.ImageUtils
 
 @Composable
 fun EditTeacherDialog(
     teacher: Teacher,
     availableScopes: List<Scope>,
+    configDirectory: String,
     onDismiss: () -> Unit,
     onUpdateTeacher: (Teacher) -> Unit
 ) {
     var name by remember { mutableStateOf(teacher.name) }
+    var subtitle by remember { mutableStateOf(teacher.subtitle) }
+    var backgroundImage by remember { mutableStateOf(teacher.backgroundImage) }
     var email by remember { mutableStateOf(teacher.email) }
     var phone by remember { mutableStateOf(teacher.phone) }
     var description by remember { mutableStateOf(teacher.description) }
@@ -51,6 +56,48 @@ fun EditTeacherDialog(
                     label = { Text("Name*") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Subtitle field
+                OutlinedTextField(
+                    value = subtitle,
+                    onValueChange = { subtitle = it },
+                    label = { Text("Subtitle/Position") },
+                    placeholder = { Text("e.g., Math Teacher, Department Head") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Background Image Selector
+                CompactImageSelector(
+                    selectedImagePath = backgroundImage,
+                    configDirectory = configDirectory,
+                    onImageSelected = { selectedPath ->
+                        // Copy image to app directory
+                        val copiedPath = ImageUtils.copyImageToAppDirectory(
+                            sourceImagePath = selectedPath,
+                            targetType = "teacher",
+                            entityId = teacher.id,
+                            configDirectory = configDirectory
+                        )
+                        if (copiedPath != null) {
+                            // Delete old image if exists
+                            if (backgroundImage.isNotBlank()) {
+                                ImageUtils.deleteImageFromAppDirectory(backgroundImage, configDirectory)
+                            }
+                            backgroundImage = copiedPath
+                        }
+                    },
+                    onImageCleared = { 
+                        if (backgroundImage.isNotBlank()) {
+                            ImageUtils.deleteImageFromAppDirectory(backgroundImage, configDirectory)
+                        }
+                        backgroundImage = ""
+                    }
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -169,6 +216,8 @@ fun EditTeacherDialog(
                                 onUpdateTeacher(
                                     teacher.copy(
                                         name = name.trim(),
+                                        subtitle = subtitle.trim(),
+                                        backgroundImage = backgroundImage,
                                         email = email.trim(),
                                         phone = phone.trim(),
                                         scopes = selectedScopes.toList(),

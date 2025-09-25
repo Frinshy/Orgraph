@@ -1,17 +1,21 @@
 package de.frinshy.orgraph.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import de.frinshy.orgraph.data.models.Scope
@@ -19,34 +23,22 @@ import de.frinshy.orgraph.presentation.components.CompactImageSelector
 import de.frinshy.orgraph.util.ImageUtils
 
 @Composable
-fun AddTeacherDialog(
-    availableScopes: List<Scope>,
+fun EditScopeDialog(
+    scope: Scope,
     configDirectory: String,
     onDismiss: () -> Unit,
-    onAddTeacher: (
-        name: String,
-        subtitle: String,
-        backgroundImage: String,
-        email: String,
-        phone: String,
-        scopes: List<Scope>,
-        description: String,
-        experience: Int
-    ) -> Unit,
+    onUpdateScope: (Scope) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var name by remember { mutableStateOf("") }
-    var subtitle by remember { mutableStateOf("") }
-    var backgroundImage by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var experience by remember { mutableStateOf("") }
-    var selectedScopes by remember { mutableStateOf(setOf<Scope>()) }
+    var name by remember { mutableStateOf(scope.name) }
+    var subtitle by remember { mutableStateOf(scope.subtitle) }
+    var backgroundImage by remember { mutableStateOf(scope.backgroundImage) }
+    var description by remember { mutableStateOf(scope.description) }
+    var selectedColor by remember { mutableStateOf(scope.color) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            modifier = modifier.widthIn(max = 600.dp),
+            modifier = modifier.widthIn(max = 500.dp),
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 3.dp
@@ -61,7 +53,7 @@ fun AddTeacherDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Add New Teacher",
+                        text = "Edit Scope",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Medium
                     )
@@ -78,7 +70,8 @@ fun AddTeacherDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name *") },
+                    label = { Text("Scope Name *") },
+                    placeholder = { Text("e.g., Mathematics, Science, Arts...") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -88,8 +81,8 @@ fun AddTeacherDialog(
                 OutlinedTextField(
                     value = subtitle,
                     onValueChange = { subtitle = it },
-                    label = { Text("Subtitle/Position") },
-                    placeholder = { Text("e.g., Math Teacher, Department Head") },
+                    label = { Text("Subtitle/Type") },
+                    placeholder = { Text("e.g., Core Subject, Elective, AP Course") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -104,8 +97,8 @@ fun AddTeacherDialog(
                         // Copy image to app directory
                         val copiedPath = ImageUtils.copyImageToAppDirectory(
                             sourceImagePath = selectedPath,
-                            targetType = "teacher",
-                            entityId = java.util.UUID.randomUUID().toString(),
+                            targetType = "scope",
+                            entityId = scope.id,
                             configDirectory = configDirectory
                         )
                         if (copiedPath != null) {
@@ -118,94 +111,74 @@ fun AddTeacherDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = { Text("Phone") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                OutlinedTextField(
-                    value = experience,
-                    onValueChange = { experience = it },
-                    label = { Text("Years of Experience") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Description") },
+                    placeholder = { Text("Brief description of this scope...") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Scopes selection
+                // Color selection
                 Text(
-                    text = "Scopes",
+                    text = "Color",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 200.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(availableScopes) { scope ->
-                        val isSelected = selectedScopes.contains(scope)
-                        
-                        Row(
+                    items(predefinedColors) { color ->
+                        ColorSelectionItem(
+                            color = color,
+                            isSelected = selectedColor == color,
+                            onClick = { selectedColor = color }
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Preview
+                Text(
+                    text = "Preview",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    tonalElevation = 0.dp
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                    ) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = isSelected,
-                                onCheckedChange = { checked ->
-                                    selectedScopes = if (checked) {
-                                        selectedScopes + scope
-                                    } else {
-                                        selectedScopes - scope
-                                    }
-                                }
-                            )
-                            
-                            Spacer(modifier = Modifier.width(8.dp))
-                            
-                            SubjectIndicator(
-                                color = scope.color,
-                                size = 12.dp
-                            )
-                            
-                            Spacer(modifier = Modifier.width(8.dp))
-                            
-                            Text(
-                                text = scope.name,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(selectedColor)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = name.ifEmpty { "Scope Name" },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (name.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
                 
@@ -225,24 +198,59 @@ fun AddTeacherDialog(
                     OrgraphButton(
                         onClick = {
                             if (name.isNotBlank()) {
-                                onAddTeacher(
-                                    name.trim(),
-                                    subtitle.trim(),
-                                    backgroundImage,
-                                    email.trim(),
-                                    phone.trim(),
-                                    selectedScopes.toList(),
-                                    description.trim(),
-                                    experience.toIntOrNull() ?: 0
+                                onUpdateScope(
+                                    scope.copy(
+                                        name = name.trim(),
+                                        subtitle = subtitle.trim(),
+                                        backgroundImage = backgroundImage,
+                                        color = selectedColor,
+                                        description = description.trim()
+                                    )
                                 )
                             }
                         },
                         enabled = name.isNotBlank()
                     ) {
-                        Text("Add Teacher")
+                        Text("Update Scope")
                     }
                 }
             }
         }
     }
 }
+
+@Composable
+private fun ColorSelectionItem(
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(color)
+            .then(
+                if (isSelected) {
+                    Modifier.border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                } else {
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                }
+            )
+            .clickable { onClick() }
+    )
+}
+
+private val predefinedColors = listOf(
+    Color(0xFF6750A4), // Purple
+    Color(0xFF1976D2), // Blue
+    Color(0xFF388E3C), // Green
+    Color(0xFFD32F2F), // Red
+    Color(0xFFFF9800), // Orange
+    Color(0xFF7B1FA2), // Deep Purple
+    Color(0xFF0097A7), // Cyan
+    Color(0xFF689F38), // Light Green
+    Color(0xFFF57C00), // Amber
+    Color(0xFF5D4037)  // Brown
+)

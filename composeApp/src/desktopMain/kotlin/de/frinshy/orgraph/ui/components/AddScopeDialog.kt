@@ -18,14 +18,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import de.frinshy.orgraph.presentation.components.CompactImageSelector
+import de.frinshy.orgraph.util.ImageUtils
 
 @Composable
 fun AddScopeDialog(
+    configDirectory: String,
     onDismiss: () -> Unit,
-    onAddScope: (name: String, color: Color, description: String) -> Unit,
+    onAddScope: (name: String, subtitle: String, backgroundImage: String, color: Color, description: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var name by remember { mutableStateOf("") }
+    var subtitle by remember { mutableStateOf("") }
+    var backgroundImage by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(predefinedColors.first()) }
 
@@ -67,6 +72,38 @@ fun AddScopeDialog(
                     placeholder = { Text("e.g., Mathematics, Science, Arts...") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                OutlinedTextField(
+                    value = subtitle,
+                    onValueChange = { subtitle = it },
+                    label = { Text("Subtitle/Type") },
+                    placeholder = { Text("e.g., Core Subject, Elective, AP Course") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Background Image Selector
+                CompactImageSelector(
+                    selectedImagePath = backgroundImage,
+                    configDirectory = configDirectory,
+                    onImageSelected = { selectedPath ->
+                        // Copy image to app directory
+                        val copiedPath = ImageUtils.copyImageToAppDirectory(
+                            sourceImagePath = selectedPath,
+                            targetType = "scope",
+                            entityId = java.util.UUID.randomUUID().toString(),
+                            configDirectory = configDirectory
+                        )
+                        if (copiedPath != null) {
+                            backgroundImage = copiedPath
+                        }
+                    },
+                    onImageCleared = { backgroundImage = "" }
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -155,6 +192,8 @@ fun AddScopeDialog(
                             if (name.isNotBlank()) {
                                 onAddScope(
                                     name.trim(),
+                                    subtitle.trim(),
+                                    backgroundImage,
                                     selectedColor,
                                     description.trim()
                                 )
