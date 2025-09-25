@@ -17,6 +17,7 @@ kotlin = "2.1.21"
 kotlinx-coroutines = "1.10.2"
 windowStyler = "0.3.3-SNAPSHOT"
 fluent = "0.0.1-dev.8"
+elk = "0.8.1"
 
 [libraries]
 fluent = { module = "com.konyaco:fluent", version.ref = "fluent" }
@@ -34,6 +35,10 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+elk-core = { module = "org.eclipse.elk:org.eclipse.elk.core", version.ref = "elk" }
+elk-alg-layered = { module = "org.eclipse.elk:org.eclipse.elk.alg.layered", version.ref = "elk" }
+elk-alg-force = { module = "org.eclipse.elk:org.eclipse.elk.alg.force", version.ref = "elk" }
+elk-alg-radial = { module = "org.eclipse.elk:org.eclipse.elk.alg.radial", version.ref = "elk" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

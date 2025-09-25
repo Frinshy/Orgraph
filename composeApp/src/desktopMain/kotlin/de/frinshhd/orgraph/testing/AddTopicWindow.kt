@@ -30,6 +30,7 @@ import com.konyaco.fluent.icons.Icons
 import com.konyaco.fluent.icons.regular.ChevronRight
 import com.konyaco.fluent.icons.regular.Delete
 import com.konyaco.fluent.icons.regular.ExpandUpRight
+import de.frinshhd.orgraph.mindmap.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -418,6 +419,72 @@ fun DrawScope.drawMindMapNodes(
 
 @Composable
 fun MindMapView(topics: List<TopicNode>) {
+    var useElkLayout by remember { mutableStateOf(true) }
+    var currentAlgorithm by remember { mutableStateOf(LayoutAlgorithm.RADIAL) }
+
+    // Convert TopicNode to MindMapNode for ELK processing
+    val mindMapNode = remember(topics) {
+        if (topics.isNotEmpty()) {
+            MindMapConverter.topicNodeToMindMapNode(topics[0])
+        } else {
+            MindMapConverter.createSampleMindMap()
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Layout selection controls
+        Row(
+            modifier = Modifier.padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Layout:")
+            Button(
+                onClick = { useElkLayout = !useElkLayout },
+                colors = if (useElkLayout) {
+                    ButtonDefaults.buttonColors()
+                } else {
+                    ButtonDefaults.outlinedButtonColors()
+                }
+            ) {
+                Text(if (useElkLayout) "ELK Auto" else "Manual")
+            }
+
+            if (useElkLayout) {
+                LayoutAlgorithm.values().forEach { algo ->
+                    Button(
+                        onClick = { currentAlgorithm = algo },
+                        colors = if (currentAlgorithm == algo) {
+                            ButtonDefaults.buttonColors()
+                        } else {
+                            ButtonDefaults.outlinedButtonColors()
+                        }
+                    ) {
+                        Text(algo.name.lowercase().replaceFirstChar { it.uppercase() })
+                    }
+                }
+            }
+        }
+
+        // Render the appropriate mindmap view
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            if (useElkLayout) {
+                // Use new ELK-based automatic layout
+                ElkMindMapCanvas(
+                    mindMapNode = mindMapNode,
+                    algorithm = currentAlgorithm,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                // Use original manual layout
+                OriginalMindMapView(topics)
+            }
+        }
+    }
+}
+
+@Composable
+private fun OriginalMindMapView(topics: List<TopicNode>) {
     val textMeasurer = rememberTextMeasurer()
     var offset by remember { mutableStateOf(Offset.Zero) }
     var lastOffset by remember { mutableStateOf(Offset.Zero) }
@@ -425,6 +492,7 @@ fun MindMapView(topics: List<TopicNode>) {
     var dragStart by remember { mutableStateOf(Offset.Zero) }
     val scale = 1f
     val nodeCenters = remember { mutableStateMapOf<TopicNode, Offset>() }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()

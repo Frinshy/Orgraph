@@ -32,6 +32,10 @@ kotlin {
             implementation(libs.fluent)
             implementation(libs.fluent.icons.extended)
             implementation(libs.window.styler)
+            implementation(libs.elk.core)
+            implementation(libs.elk.alg.layered)
+            implementation(libs.elk.alg.force)
+            implementation(libs.elk.alg.radial)
         }
     }
 }
