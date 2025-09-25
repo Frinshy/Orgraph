@@ -1,4 +1,4 @@
-package de.frinshhd.orgraph
+package de.frinshy.orgraph
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

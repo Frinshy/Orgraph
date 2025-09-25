@@ -1,8 +1,7 @@
-package de.frinshhd.orgraph
+package de.frinshy.orgraph
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -13,14 +12,16 @@ import com.mayakapps.compose.windowstyler.WindowBackdrop
 import com.mayakapps.compose.windowstyler.WindowStyle
 
 fun main() = application {
-    val windowState = rememberWindowState(position = WindowPosition(Alignment.Center), size = DpSize(1280.dp, 720.dp))
-
+    val windowState = rememberWindowState(
+        position = WindowPosition(Alignment.Center),
+        size = DpSize(1280.dp, 720.dp)
+    )
 
     Window(
         onCloseRequest = ::exitApplication,
         state = windowState,
-        title = "MindMap",
-        icon = painterResource("images/icon.svg")
+        title = "Orgraph - School Teacher Management",
+        resizable = true
     ) {
         WindowStyle(
             isDarkTheme = isSystemInDarkTheme(),
