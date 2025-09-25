@@ -16,8 +16,9 @@ fun App() {
     val viewModel: OrgraphViewModel = viewModel()
     val school by viewModel.school.collectAsState()
     val selectedView by viewModel.selectedView.collectAsState()
+    val isDarkTheme by viewModel.isDarkTheme.collectAsState()
 
-    OrgraphTheme {
+    OrgraphTheme(darkTheme = isDarkTheme) {
         when (selectedView) {
             OrgraphViewModel.ViewMode.LIST -> {
                 TeacherListScreen(

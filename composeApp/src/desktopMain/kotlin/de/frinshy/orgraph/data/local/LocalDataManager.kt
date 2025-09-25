@@ -2,7 +2,7 @@ package de.frinshy.orgraph.data.local
 
 import androidx.compose.ui.graphics.Color
 import de.frinshy.orgraph.data.models.School
-import de.frinshy.orgraph.data.models.Subject
+import de.frinshy.orgraph.data.models.Scope
 import de.frinshy.orgraph.data.models.Teacher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,11 +12,8 @@ import kotlinx.serialization.json.Json
 import java.util.prefs.Preferences
 
 @Serializable
-data class SerializableSubject(
-    val id: String,
-    val name: String,
-    val color: Long,
-    val description: String = ""
+data class SerializableScope(
+    val id: String, val name: String, val color: Long, val description: String = ""
 )
 
 @Serializable
@@ -25,7 +22,8 @@ data class SerializableTeacher(
     val name: String,
     val email: String = "",
     val phone: String = "",
-    val subjects: List<SerializableSubject> = emptyList(),
+    val scopes: List<SerializableScope> = emptyList(),
+    val subjects: List<SerializableScope> = emptyList(), // For backwards compatibility
     val description: String = "",
     val experience: Int = 0
 )
@@ -36,14 +34,18 @@ data class SerializableSchool(
     val name: String,
     val address: String = "",
     val teachers: List<SerializableTeacher> = emptyList(),
-    val subjects: List<SerializableSubject> = emptyList()
+    val scopes: List<SerializableScope> = emptyList(),
+    val subjects: List<SerializableScope> = emptyList() // For backwards compatibility
 )
 
 class LocalDataManager {
     private val prefs = Preferences.userNodeForPackage(LocalDataManager::class.java)
-    private val json = Json { prettyPrint = true }
+    private val json = Json { 
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
     private val schoolKey = "orgraph_school_data"
-    
+
     suspend fun saveSchool(school: School) {
         withContext(Dispatchers.IO) {
             try {
@@ -56,7 +58,7 @@ class LocalDataManager {
             }
         }
     }
-    
+
     suspend fun loadSchool(): School? {
         return withContext(Dispatchers.IO) {
             try {
@@ -73,7 +75,7 @@ class LocalDataManager {
             }
         }
     }
-    
+
     suspend fun clearData() {
         withContext(Dispatchers.IO) {
             prefs.remove(schoolKey)
@@ -89,8 +91,7 @@ private fun School.toSerializable(): SerializableSchool {
         name = name,
         address = address,
         teachers = teachers.map { it.toSerializable() },
-        subjects = subjects.map { it.toSerializable() }
-    )
+        scopes = scopes.map { it.toSerializable() })
 }
 
 private fun Teacher.toSerializable(): SerializableTeacher {
@@ -99,48 +100,48 @@ private fun Teacher.toSerializable(): SerializableTeacher {
         name = name,
         email = email,
         phone = phone,
-        subjects = subjects.map { it.toSerializable() },
+        scopes = scopes.map { it.toSerializable() },
         description = description,
         experience = experience
     )
 }
 
-private fun Subject.toSerializable(): SerializableSubject {
-    return SerializableSubject(
-        id = id,
-        name = name,
-        color = color.value.toLong(),
-        description = description
+private fun Scope.toSerializable(): SerializableScope {
+    return SerializableScope(
+        id = id, name = name, color = color.value.toLong(), description = description
     )
 }
 
 private fun SerializableSchool.toSchool(): School {
+    // Migration: use scopes if available, otherwise migrate from subjects
+    val finalScopes = if (scopes.isNotEmpty()) scopes else subjects
+    
     return School(
         id = id,
         name = name,
         address = address,
         teachers = teachers.map { it.toTeacher() },
-        subjects = subjects.map { it.toSubject() }
+        scopes = finalScopes.map { it.toScope() }
     )
 }
 
 private fun SerializableTeacher.toTeacher(): Teacher {
+    // Migration: use scopes if available, otherwise migrate from subjects
+    val finalScopes = if (scopes.isNotEmpty()) scopes else subjects
+    
     return Teacher(
         id = id,
         name = name,
         email = email,
         phone = phone,
-        subjects = subjects.map { it.toSubject() },
+        scopes = finalScopes.map { it.toScope() },
         description = description,
         experience = experience
     )
 }
 
-private fun SerializableSubject.toSubject(): Subject {
-    return Subject(
-        id = id,
-        name = name,
-        color = Color(color.toULong()),
-        description = description
+private fun SerializableScope.toScope(): Scope {
+    return Scope(
+        id = id, name = name, color = Color(color.toULong()), description = description
     )
 }

@@ -40,11 +40,11 @@ data class MindMapNode(
     var targetPosition: Offset = Offset.Zero,
     val children: List<MindMapNode> = emptyList(),
     val size: Float = 60f,
-    val type: NodeType = NodeType.SUBJECT
+    val type: NodeType = NodeType.SCOPE
 )
 
 enum class NodeType {
-    SCHOOL, SUBJECT, TEACHER
+    SCHOOL, SCOPE, TEACHER
 }
 
 @Composable
@@ -120,7 +120,7 @@ fun MindMapLegend(
             
             LegendItem(
                 color = MaterialTheme.colorScheme.secondary,
-                label = "Subjects"
+                label = "Scopes"
             )
             
             LegendItem(
@@ -164,8 +164,8 @@ private fun buildMindMapData(school: School): MindMapNode {
         type = NodeType.SCHOOL
     )
     
-    // Subject nodes with teacher children
-    val subjectNodes = school.getSubjectsWithTeachers().map { (subject, teachers) ->
+    // Scope nodes with teacher children
+    val scopeNodes = school.getScopesWithTeachers().map { (scope, teachers) ->
         val teacherNodes = teachers.map { teacher ->
             MindMapNode(
                 id = teacher.id,
@@ -178,17 +178,17 @@ private fun buildMindMapData(school: School): MindMapNode {
         }
         
         MindMapNode(
-            id = subject.id,
-            label = subject.name,
-            color = subject.color,
+            id = scope.id,
+            label = scope.name,
+            color = scope.color,
             level = 1,
             children = teacherNodes,
             size = 60f,
-            type = NodeType.SUBJECT
+            type = NodeType.SCOPE
         )
     }
     
-    return rootNode.copy(children = subjectNodes)
+    return rootNode.copy(children = scopeNodes)
 }
 
 private fun layoutNodes(rootNode: MindMapNode, canvasSize: Size) {
@@ -199,22 +199,22 @@ private fun layoutNodes(rootNode: MindMapNode, canvasSize: Size) {
     rootNode.position = Offset(centerX, centerY)
     rootNode.targetPosition = Offset(centerX, centerY)
     
-    // Layout subject nodes in a circle around the root
-    val subjectCount = rootNode.children.size
-    val subjectRadius = min(canvasSize.width, canvasSize.height) * 0.3f
+    // Layout scope nodes in a circle around the root
+    val scopeCount = rootNode.children.size
+    val scopeRadius = min(canvasSize.width, canvasSize.height) * 0.3f
     
-    rootNode.children.forEachIndexed { index, subjectNode ->
-        val angle = (2 * PI * index / subjectCount).toFloat()
-        val x = centerX + cos(angle) * subjectRadius
-        val y = centerY + sin(angle) * subjectRadius
-        subjectNode.position = Offset(x, y)
-        subjectNode.targetPosition = Offset(x, y)
+    rootNode.children.forEachIndexed { index, scopeNode ->
+        val angle = (2 * PI * index / scopeCount).toFloat()
+        val x = centerX + cos(angle) * scopeRadius
+        val y = centerY + sin(angle) * scopeRadius
+        scopeNode.position = Offset(x, y)
+        scopeNode.targetPosition = Offset(x, y)
         
-        // Layout teacher nodes around each subject
-        val teacherCount = subjectNode.children.size
+        // Layout teacher nodes around each scope
+        val teacherCount = scopeNode.children.size
         val teacherRadius = 120f
         
-        subjectNode.children.forEachIndexed { teacherIndex, teacherNode ->
+        scopeNode.children.forEachIndexed { teacherIndex, teacherNode ->
             val teacherAngle = angle + (2 * PI * teacherIndex / maxOf(teacherCount, 1)).toFloat() * 0.3f
             val teacherX = x + cos(teacherAngle) * teacherRadius
             val teacherY = y + sin(teacherAngle) * teacherRadius
@@ -269,7 +269,7 @@ private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: Text
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
-        NodeType.SUBJECT -> TextStyle(
+        NodeType.SCOPE -> TextStyle(
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = Color.White

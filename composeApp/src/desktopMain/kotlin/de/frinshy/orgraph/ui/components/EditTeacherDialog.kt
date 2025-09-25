@@ -3,122 +3,107 @@ package de.frinshy.orgraph.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import de.frinshy.orgraph.data.models.Subject
 import de.frinshy.orgraph.data.models.Teacher
+import de.frinshy.orgraph.data.models.Scope
 
 @Composable
 fun EditTeacherDialog(
     teacher: Teacher,
-    availableSubjects: List<Subject>,
+    availableScopes: List<Scope>,
     onDismiss: () -> Unit,
-    onUpdateTeacher: (Teacher) -> Unit,
-    modifier: Modifier = Modifier
+    onUpdateTeacher: (Teacher) -> Unit
 ) {
     var name by remember { mutableStateOf(teacher.name) }
     var email by remember { mutableStateOf(teacher.email) }
     var phone by remember { mutableStateOf(teacher.phone) }
     var description by remember { mutableStateOf(teacher.description) }
     var experience by remember { mutableStateOf(teacher.experience.toString()) }
-    var selectedSubjects by remember { mutableStateOf(teacher.subjects.toSet()) }
+    var selectedScopes by remember { mutableStateOf(teacher.scopes.toSet()) }
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            modifier = modifier.widthIn(max = 600.dp),
-            shape = MaterialTheme.shapes.extraLarge,
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp
+        OrgraphCard(
+            modifier = Modifier
+                .width(600.dp)
+                .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp)
             ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Edit Teacher",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Medium
-                    )
-                    OrgraphIconButton(
-                        onClick = onDismiss,
-                        icon = Icons.Default.Close,
-                        contentDescription = "Close dialog"
-                    )
-                }
+                Text(
+                    text = "Edit Teacher",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Form fields
+                // Name field
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name *") },
+                    label = { Text("Name*") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                // Email field
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    singleLine = true
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                // Phone field
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
                     label = { Text("Phone") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    singleLine = true
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                // Experience field
                 OutlinedTextField(
                     value = experience,
                     onValueChange = { experience = it },
                     label = { Text("Years of Experience") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    singleLine = true
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                // Description field
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 3
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    maxLines = 4
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Subjects selection
+                // Scopes selection
                 Text(
-                    text = "Subjects",
+                    text = "Scopes",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -129,8 +114,8 @@ fun EditTeacherDialog(
                     modifier = Modifier.heightIn(max = 200.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(availableSubjects) { subject ->
-                        val isSelected = selectedSubjects.contains(subject)
+                    items(availableScopes) { scope ->
+                        val isSelected = selectedScopes.contains(scope)
                         
                         Row(
                             modifier = Modifier
@@ -140,10 +125,10 @@ fun EditTeacherDialog(
                             Checkbox(
                                 checked = isSelected,
                                 onCheckedChange = { checked ->
-                                    selectedSubjects = if (checked) {
-                                        selectedSubjects + subject
+                                    selectedScopes = if (checked) {
+                                        selectedScopes + scope
                                     } else {
-                                        selectedSubjects - subject
+                                        selectedScopes - scope
                                     }
                                 }
                             )
@@ -151,14 +136,14 @@ fun EditTeacherDialog(
                             Spacer(modifier = Modifier.width(8.dp))
                             
                             SubjectIndicator(
-                                color = subject.color,
+                                color = scope.color,
                                 size = 12.dp
                             )
                             
                             Spacer(modifier = Modifier.width(8.dp))
                             
                             Text(
-                                text = subject.name,
+                                text = scope.name,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -181,15 +166,16 @@ fun EditTeacherDialog(
                     OrgraphButton(
                         onClick = {
                             if (name.isNotBlank()) {
-                                val updatedTeacher = teacher.copy(
-                                    name = name.trim(),
-                                    email = email.trim(),
-                                    phone = phone.trim(),
-                                    subjects = selectedSubjects.toList(),
-                                    description = description.trim(),
-                                    experience = experience.toIntOrNull() ?: 0
+                                onUpdateTeacher(
+                                    teacher.copy(
+                                        name = name.trim(),
+                                        email = email.trim(),
+                                        phone = phone.trim(),
+                                        scopes = selectedScopes.toList(),
+                                        description = description.trim(),
+                                        experience = experience.toIntOrNull() ?: 0
+                                    )
                                 )
-                                onUpdateTeacher(updatedTeacher)
                             }
                         },
                         enabled = name.isNotBlank()

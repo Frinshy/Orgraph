@@ -62,7 +62,7 @@ fun TeacherCard(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = "${teacher.subjects.size} subjects • ${teacher.experience} years exp.",
+                            text = "${teacher.scopes.size} scopes • ${teacher.experience} years exp.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -86,23 +86,23 @@ fun TeacherCard(
                 }
             }
             
-            // Subjects chips
-            if (teacher.subjects.isNotEmpty()) {
+            // Scopes chips
+            if (teacher.scopes.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(teacher.subjects) { subject ->
+                    items(teacher.scopes) { scope ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             SubjectIndicator(
-                                color = subject.color,
+                                color = scope.color,
                                 size = 8.dp
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             OrgraphChip(
-                                label = subject.name,
+                                label = scope.name,
                                 selected = true
                             )
                         }

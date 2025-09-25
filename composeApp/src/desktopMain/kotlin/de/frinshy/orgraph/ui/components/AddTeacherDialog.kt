@@ -14,17 +14,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import de.frinshy.orgraph.data.models.Subject
+import de.frinshy.orgraph.data.models.Scope
 
 @Composable
 fun AddTeacherDialog(
-    availableSubjects: List<Subject>,
+    availableScopes: List<Scope>,
     onDismiss: () -> Unit,
     onAddTeacher: (
         name: String,
         email: String,
         phone: String,
-        subjects: List<Subject>,
+        scopes: List<Scope>,
         description: String,
         experience: Int
     ) -> Unit,
@@ -35,7 +35,7 @@ fun AddTeacherDialog(
     var phone by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var experience by remember { mutableStateOf("") }
-    var selectedSubjects by remember { mutableStateOf(setOf<Subject>()) }
+    var selectedScopes by remember { mutableStateOf(setOf<Scope>()) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -121,9 +121,9 @@ fun AddTeacherDialog(
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Subjects selection
+                // Scopes selection
                 Text(
-                    text = "Subjects",
+                    text = "Scopes",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -134,8 +134,8 @@ fun AddTeacherDialog(
                     modifier = Modifier.heightIn(max = 200.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(availableSubjects) { subject ->
-                        val isSelected = selectedSubjects.contains(subject)
+                    items(availableScopes) { scope ->
+                        val isSelected = selectedScopes.contains(scope)
                         
                         Row(
                             modifier = Modifier
@@ -145,10 +145,10 @@ fun AddTeacherDialog(
                             Checkbox(
                                 checked = isSelected,
                                 onCheckedChange = { checked ->
-                                    selectedSubjects = if (checked) {
-                                        selectedSubjects + subject
+                                    selectedScopes = if (checked) {
+                                        selectedScopes + scope
                                     } else {
-                                        selectedSubjects - subject
+                                        selectedScopes - scope
                                     }
                                 }
                             )
@@ -156,14 +156,14 @@ fun AddTeacherDialog(
                             Spacer(modifier = Modifier.width(8.dp))
                             
                             SubjectIndicator(
-                                color = subject.color,
+                                color = scope.color,
                                 size = 12.dp
                             )
                             
                             Spacer(modifier = Modifier.width(8.dp))
                             
                             Text(
-                                text = subject.name,
+                                text = scope.name,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -190,7 +190,7 @@ fun AddTeacherDialog(
                                     name.trim(),
                                     email.trim(),
                                     phone.trim(),
-                                    selectedSubjects.toList(),
+                                    selectedScopes.toList(),
                                     description.trim(),
                                     experience.toIntOrNull() ?: 0
                                 )

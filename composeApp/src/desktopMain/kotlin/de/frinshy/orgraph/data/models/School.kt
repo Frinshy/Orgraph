@@ -5,17 +5,17 @@ data class School(
     val name: String,
     val address: String = "",
     val teachers: List<Teacher> = emptyList(),
-    val subjects: List<Subject> = Subject.defaultSubjects()
+    val scopes: List<Scope> = emptyList()
 ) {
-    fun getTeachersBySubject(subjectId: String): List<Teacher> {
+    fun getTeachersByScope(scopeId: String): List<Teacher> {
         return teachers.filter { teacher -> 
-            teacher.subjects.any { it.id == subjectId }
+            teacher.scopes.any { it.id == scopeId }
         }
     }
     
-    fun getSubjectsWithTeachers(): List<Pair<Subject, List<Teacher>>> {
-        return subjects.map { subject ->
-            subject to getTeachersBySubject(subject.id)
+    fun getScopesWithTeachers(): List<Pair<Scope, List<Teacher>>> {
+        return scopes.map { scope ->
+            scope to getTeachersByScope(scope.id)
         }
     }
 }

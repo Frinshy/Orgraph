@@ -5,7 +5,7 @@ data class Teacher(
     val name: String,
     val email: String = "",
     val phone: String = "",
-    val subjects: List<Subject> = emptyList(),
+    val scopes: List<Scope> = emptyList(),
     val description: String = "",
     val experience: Int = 0 // years of experience
 )

@@ -1,6 +1,7 @@
 package de.frinshy.orgraph
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -8,8 +9,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mayakapps.compose.windowstyler.WindowBackdrop
 import com.mayakapps.compose.windowstyler.WindowStyle
+import de.frinshy.orgraph.presentation.viewmodel.OrgraphViewModel
 
 fun main() = application {
     val windowState = rememberWindowState(
@@ -23,8 +26,11 @@ fun main() = application {
         title = "Orgraph - School Teacher Management",
         resizable = true
     ) {
+        val viewModel: OrgraphViewModel = viewModel()
+        val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+        
         WindowStyle(
-            isDarkTheme = isSystemInDarkTheme(),
+            isDarkTheme = isDarkTheme,
             backdropType = WindowBackdrop.Mica
         )
 

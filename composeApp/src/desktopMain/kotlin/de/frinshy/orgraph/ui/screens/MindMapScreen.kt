@@ -36,6 +36,13 @@ fun MindMapScreen(
         OrgraphTopAppBar(
             title = "${school.name} - Mind Map",
             actions = {
+                // Theme toggle button
+                val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+                ThemeToggleButton(
+                    isDarkTheme = isDarkTheme,
+                    onToggle = { viewModel.toggleTheme() }
+                )
+                
                 OrgraphIconButton(
                     onClick = { viewModel.switchView(OrgraphViewModel.ViewMode.LIST) },
                     icon = Icons.Default.List,
@@ -76,10 +83,10 @@ fun MindMapScreen(
     // Add Teacher Dialog
     if (showAddDialog) {
         AddTeacherDialog(
-            availableSubjects = school.subjects,
+            availableScopes = school.scopes,
             onDismiss = { viewModel.hideAddTeacherDialog() },
-            onAddTeacher = { name, email, phone, subjects, description, experience ->
-                viewModel.addTeacher(name, email, phone, subjects, description, experience)
+            onAddTeacher = { name, email, phone, scopes, description, experience ->
+                viewModel.addTeacher(name, email, phone, scopes, description, experience)
             }
         )
     }
@@ -89,12 +96,23 @@ fun MindMapScreen(
         selectedTeacher?.let { teacher ->
             EditTeacherDialog(
                 teacher = teacher,
-                availableSubjects = school.subjects,
+                availableScopes = school.scopes,
                 onDismiss = { viewModel.hideEditTeacherDialog() },
                 onUpdateTeacher = { updatedTeacher ->
                     viewModel.updateTeacher(updatedTeacher)
                 }
             )
         }
+    }
+    
+    // Add Scope Dialog
+    val showAddScopeDialog by viewModel.showAddScopeDialog.collectAsState()
+    if (showAddScopeDialog) {
+        AddScopeDialog(
+            onDismiss = { viewModel.hideAddScopeDialog() },
+            onAddScope = { name, color, description ->
+                viewModel.addScope(name, color, description)
+            }
+        )
     }
 }

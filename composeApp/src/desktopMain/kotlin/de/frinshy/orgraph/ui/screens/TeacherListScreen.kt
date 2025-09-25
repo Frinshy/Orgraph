@@ -39,6 +39,13 @@ fun TeacherListScreen(
         OrgraphTopAppBar(
             title = school.name,
             actions = {
+                // Theme toggle button
+                val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+                ThemeToggleButton(
+                    isDarkTheme = isDarkTheme,
+                    onToggle = { viewModel.toggleTheme() }
+                )
+                
                 // View toggle button
                 OrgraphIconButton(
                     onClick = {
@@ -80,6 +87,15 @@ fun TeacherListScreen(
                     item {
                         SchoolStatisticsCard(school = school)
                     }
+                    
+                    // Scope Management section
+                    item {
+                        ScopeManagementCard(
+                            scopes = school.scopes,
+                            onAddScope = { viewModel.showAddScopeDialog() },
+                            onDeleteScope = { scopeId -> viewModel.removeScope(scopeId) }
+                        )
+                    }
 
                     // Teachers
                     items(school.teachers) { teacher ->
@@ -109,10 +125,10 @@ fun TeacherListScreen(
     // Add Teacher Dialog
     if (showAddDialog) {
         AddTeacherDialog(
-            availableSubjects = school.subjects,
+            availableScopes = school.scopes,
             onDismiss = { viewModel.hideAddTeacherDialog() },
-            onAddTeacher = { name, email, phone, subjects, description, experience ->
-                viewModel.addTeacher(name, email, phone, subjects, description, experience)
+            onAddTeacher = { name, email, phone, scopes, description, experience ->
+                viewModel.addTeacher(name, email, phone, scopes, description, experience)
             }
         )
     }
@@ -122,13 +138,24 @@ fun TeacherListScreen(
         selectedTeacher?.let { teacher ->
             EditTeacherDialog(
                 teacher = teacher,
-                availableSubjects = school.subjects,
+                availableScopes = school.scopes,
                 onDismiss = { viewModel.hideEditTeacherDialog() },
                 onUpdateTeacher = { updatedTeacher ->
                     viewModel.updateTeacher(updatedTeacher)
                 }
             )
         }
+    }
+    
+    // Add Scope Dialog
+    val showAddScopeDialog by viewModel.showAddScopeDialog.collectAsState()
+    if (showAddScopeDialog) {
+        AddScopeDialog(
+            onDismiss = { viewModel.hideAddScopeDialog() },
+            onAddScope = { name, color, description ->
+                viewModel.addScope(name, color, description)
+            }
+        )
     }
 }
 
@@ -162,8 +189,8 @@ private fun SchoolStatisticsCard(
                 )
 
                 StatisticItem(
-                    label = "Subjects",
-                    value = school.subjects.size.toString(),
+                    label = "Scopes",
+                    value = school.scopes.size.toString(),
                     color = MaterialTheme.colorScheme.secondary
                 )
 

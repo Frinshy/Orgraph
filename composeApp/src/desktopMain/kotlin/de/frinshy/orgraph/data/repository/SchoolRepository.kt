@@ -2,7 +2,7 @@ package de.frinshy.orgraph.data.repository
 
 import de.frinshy.orgraph.data.local.LocalDataManager
 import de.frinshy.orgraph.data.models.School
-import de.frinshy.orgraph.data.models.Subject
+import de.frinshy.orgraph.data.models.Scope
 import de.frinshy.orgraph.data.models.Teacher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -56,19 +56,40 @@ class SchoolRepository {
         localDataManager.saveSchool(newSchool)
     }
     
-    suspend fun addSubject(subject: Subject) {
+    suspend fun addScope(scope: Scope) {
         val currentSchool = _school.value
         val newSchool = currentSchool.copy(
-            subjects = currentSchool.subjects + subject
+            scopes = currentSchool.scopes + scope
         )
         _school.value = newSchool
         localDataManager.saveSchool(newSchool)
     }
     
-    suspend fun removeSubject(subjectId: String) {
+    suspend fun removeScope(scopeId: String) {
         val currentSchool = _school.value
         val newSchool = currentSchool.copy(
-            subjects = currentSchool.subjects.filter { it.id != subjectId }
+            scopes = currentSchool.scopes.filter { it.id != scopeId },
+            teachers = currentSchool.teachers.map { teacher ->
+                teacher.copy(scopes = teacher.scopes.filter { it.id != scopeId })
+            }
+        )
+        _school.value = newSchool
+        localDataManager.saveSchool(newSchool)
+    }
+    
+    suspend fun updateScope(scope: Scope) {
+        val currentSchool = _school.value
+        val newSchool = currentSchool.copy(
+            scopes = currentSchool.scopes.map { 
+                if (it.id == scope.id) scope else it 
+            },
+            teachers = currentSchool.teachers.map { teacher ->
+                teacher.copy(
+                    scopes = teacher.scopes.map { teacherScope ->
+                        if (teacherScope.id == scope.id) scope else teacherScope
+                    }
+                )
+            }
         )
         _school.value = newSchool
         localDataManager.saveSchool(newSchool)
