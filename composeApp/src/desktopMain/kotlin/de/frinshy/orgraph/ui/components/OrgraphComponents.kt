@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OrgraphCard(
     modifier: Modifier = Modifier,
-    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     colors: CardColors = CardDefaults.cardColors(),
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,

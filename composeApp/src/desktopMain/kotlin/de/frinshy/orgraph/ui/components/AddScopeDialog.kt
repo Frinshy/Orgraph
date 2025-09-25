@@ -34,7 +34,7 @@ fun AddScopeDialog(
             modifier = modifier.widthIn(max = 500.dp),
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp
+            tonalElevation = 3.dp
         ) {
             Column(
                 modifier = Modifier.padding(24.dp)

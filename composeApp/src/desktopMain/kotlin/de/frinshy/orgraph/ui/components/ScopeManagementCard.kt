@@ -81,8 +81,11 @@ private fun ScopeChip(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OrgraphCard(
-        modifier = modifier
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),

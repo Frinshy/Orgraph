@@ -193,12 +193,6 @@ private fun SchoolStatisticsCard(
                     value = school.scopes.size.toString(),
                     color = MaterialTheme.colorScheme.secondary
                 )
-
-                StatisticItem(
-                    label = "Avg Experience",
-                    value = "${school.teachers.map { it.experience }.average().toInt()}y",
-                    color = MaterialTheme.colorScheme.tertiary
-                )
             }
         }
     }

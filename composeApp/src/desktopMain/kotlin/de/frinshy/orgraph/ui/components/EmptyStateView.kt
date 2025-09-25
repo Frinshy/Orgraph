@@ -85,7 +85,7 @@ fun EmptyStateView(
                 modifier = Modifier.size(60.dp),
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
-                tonalElevation = 6.dp
+                tonalElevation = 2.dp
             ) {
                 Icon(
                     imageVector = icon,
