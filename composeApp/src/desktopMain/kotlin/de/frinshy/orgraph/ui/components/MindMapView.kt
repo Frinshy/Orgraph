@@ -28,6 +28,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.frinshy.orgraph.data.models.School
+import de.frinshy.orgraph.util.ExportUtil
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -419,4 +420,20 @@ private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: Text
     node.children.forEach { child ->
         drawNodesRecursively(child, textMeasurer)
     }
+}
+
+// Export function for creating PNG
+suspend fun exportMindMapToPng(
+    school: School,
+    fileName: String = "${school.name}_mindmap"
+): Boolean {
+    return ExportUtil.exportMindMapToPng(
+        drawFunction = { textMeasurer ->
+            // Use the exact same functions as the interactive view
+            val mindMapData = buildMindMapData(school, textMeasurer)
+            layoutNodes(mindMapData, size)
+            drawMindMap(mindMapData, this, textMeasurer)
+        },
+        defaultFileName = fileName
+    )
 }

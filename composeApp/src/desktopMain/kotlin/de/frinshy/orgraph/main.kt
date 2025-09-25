@@ -3,6 +3,9 @@ package de.frinshy.orgraph
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.loadImageBitmap
+import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -24,7 +27,8 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         state = windowState,
         title = "Orgraph - School Teacher Management",
-        resizable = true
+        resizable = true,
+        icon = BitmapPainter(useResource("images/icon.png", ::loadImageBitmap))
     ) {
         val viewModel: OrgraphViewModel = viewModel()
         val isDarkTheme by viewModel.isDarkTheme.collectAsState()
