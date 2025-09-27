@@ -2,14 +2,9 @@ package de.frinshy.orgraph.data.local
 
 import de.frinshy.orgraph.data.config.ConfigManager
 import de.frinshy.orgraph.data.models.School
-import kotlinx.serialization.json.Json
 
 class LocalDataManager {
     private val configManager = ConfigManager()
-    private val json = Json { 
-        prettyPrint = true
-        ignoreUnknownKeys = true
-    }
     private val schoolFileName = "school_data.json"
 
     suspend fun saveSchool(school: School) {

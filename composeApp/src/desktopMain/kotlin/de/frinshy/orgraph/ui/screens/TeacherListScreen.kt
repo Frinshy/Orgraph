@@ -217,8 +217,8 @@ fun TeacherListScreen(
         AddScopeDialog(
             configDirectory = viewModel.getConfigDirectory(),
             onDismiss = { viewModel.hideAddScopeDialog() },
-            onAddScope = { name, subtitle, backgroundImage, color, description ->
-                viewModel.addScope(name, subtitle, backgroundImage, color, description)
+            onAddScope = { scope ->
+                viewModel.addScope(scope.name, scope.subtitle, scope.backgroundImage, scope.color, scope.description)
             }
         )
     }

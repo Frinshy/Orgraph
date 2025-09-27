@@ -52,7 +52,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb, TargetFormat.AppImage)
-            packageName = "MindMap"
+            packageName = "Orgraph"
             packageVersion = "1.0.0"
             windows {
                 shortcut = true
