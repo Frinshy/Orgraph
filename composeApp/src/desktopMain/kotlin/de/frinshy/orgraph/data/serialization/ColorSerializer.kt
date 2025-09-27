@@ -18,10 +18,16 @@ object ColorSerializer : KSerializer<Color> {
         PrimitiveSerialDescriptor("Color", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Color) {
-        // Convert Color to ARGB and then to hex string
-        val argb = value.toArgb()
-        val hexString = String.format("#%08X", argb)
-        encoder.encodeString(hexString)
+        try {
+            // First validate the color by trying to convert to ARGB
+            val argb = value.toArgb()
+            val hexString = String.format("#%08X", argb)
+            encoder.encodeString(hexString)
+        } catch (e: Exception) {
+            // If the color is invalid, serialize a safe default color
+            println("Warning: Invalid color during serialization, using default purple. Error: ${e.message}")
+            encoder.encodeString("#FF6750A4") // Default purple
+        }
     }
 
     override fun deserialize(decoder: Decoder): Color {
@@ -47,7 +53,15 @@ object ColorSerializer : KSerializer<Color> {
                     hexString.toIntOrNull() ?: throw IllegalArgumentException("Invalid color format: $hexString")
                 }
             }
-            Color(colorInt)
+            
+            // Create color and immediately validate it
+            val color = Color(colorInt)
+            
+            // Test the color is valid by attempting to use it
+            @Suppress("UNUSED_VARIABLE") 
+            val testArgb = color.toArgb() // This will fail if color is invalid
+            
+            color
         } catch (e: Exception) {
             println("Warning: Failed to parse color '$hexString', using default purple. Error: ${e.message}")
             Color(0xFF6750A4) // Default purple color

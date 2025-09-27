@@ -1,5 +1,8 @@
 package de.frinshy.orgraph.data.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class School(
     val id: String,
     val name: String,

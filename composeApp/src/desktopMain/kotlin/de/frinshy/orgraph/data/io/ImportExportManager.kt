@@ -3,8 +3,6 @@ package de.frinshy.orgraph.data.io
 import de.frinshy.orgraph.data.config.ConfigManager
 import de.frinshy.orgraph.data.models.OrgraphBackup
 import de.frinshy.orgraph.data.models.School
-import de.frinshy.orgraph.data.models.Scope
-import de.frinshy.orgraph.data.models.Teacher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -33,7 +31,7 @@ class ImportExportManager {
                 val backup = OrgraphBackup(
                     version = "1.0.0",
                     exportDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                    school = school.toSerializableSchool()
+                    school = school
                 )
                 
                 val jsonString = json.encodeToString(backup)
@@ -59,10 +57,8 @@ class ImportExportManager {
                 val jsonString = String(Files.readAllBytes(Paths.get(filePath)))
                 val backup = json.decodeFromString<OrgraphBackup>(jsonString)
                 
-                val school = backup.school.toSchool()
-                
                 Result.success(ImportResult(
-                    school = school,
+                    school = backup.school,
                     version = backup.version,
                     exportDate = backup.exportDate
                 ))
@@ -134,74 +130,3 @@ data class BackupInfo(
     val fileSize: Long,
     val lastModified: String
 )
-
-// Extension functions for conversion
-private fun School.toSerializableSchool(): de.frinshy.orgraph.data.models.SerializableSchool {
-    return de.frinshy.orgraph.data.models.SerializableSchool(
-        id = id,
-        name = name,
-        address = address,
-        teachers = teachers.map { it.toSerializableTeacher() },
-        scopes = scopes.map { it.toSerializableScope() }
-    )
-}
-
-private fun Teacher.toSerializableTeacher(): de.frinshy.orgraph.data.models.SerializableTeacher {
-    return de.frinshy.orgraph.data.models.SerializableTeacher(
-        id = id,
-        name = name,
-        subtitle = subtitle,
-        backgroundImage = backgroundImage,
-        email = email,
-        phone = phone,
-        scopes = scopes.map { it.toSerializableScope() },
-        description = description,
-        experience = experience
-    )
-}
-
-private fun Scope.toSerializableScope(): de.frinshy.orgraph.data.models.SerializableScope {
-    return de.frinshy.orgraph.data.models.SerializableScope(
-        id = id,
-        name = name,
-        subtitle = subtitle,
-        backgroundImage = backgroundImage,
-        color = color, // Direct Color serialization
-        description = description
-    )
-}
-
-private fun de.frinshy.orgraph.data.models.SerializableSchool.toSchool(): School {
-    return School(
-        id = id,
-        name = name,
-        address = address,
-        teachers = teachers.map { it.toTeacher() },
-        scopes = scopes.map { it.toScope() }
-    )
-}
-
-private fun de.frinshy.orgraph.data.models.SerializableTeacher.toTeacher(): Teacher {
-    return Teacher(
-        id = id,
-        name = name,
-        subtitle = subtitle,
-        backgroundImage = backgroundImage,
-        email = email,
-        phone = phone,
-        scopes = scopes.map { it.toScope() },
-        description = description,
-        experience = experience
-    )
-}
-
-private fun de.frinshy.orgraph.data.models.SerializableScope.toScope(): Scope {
-    return Scope(
-        id = id,
-        name = name,
-        subtitle = subtitle,
-        backgroundImage = backgroundImage,
-        color = color, // Direct Color deserialization (handled by ColorSerializer)
-        description = description
-    )
-}
