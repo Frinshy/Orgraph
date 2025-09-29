@@ -1,12 +1,27 @@
 # Orgraph
 
-This is a Kotlin Multiplatform project targeting Desktop.
+A desktop app for organizing people and groups. Manage staff, assign roles, and visualize relationships with interactive mind maps.
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - `commonMain` is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-      For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      `iosMain` would be the right folder for such calls.
+## Features
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+- **People Management** - Add and organize team members with profiles and contact info
+- **Role Assignment** - Create subjects/scopes and assign them to people
+- **Visual Organization** - Interactive mind map and list views
+- **Data Management** - Import/export configurations, local data storage
+- **Modern UI** - Clean interface with dark/light themes
+
+## Getting Started
+
+### Download
+
+Get the latest release from the [releases page](../../releases) or build from source.
+
+### Building from Source
+
+```bash
+git clone https://github.com/FrinshHD/Orgraph.git
+cd Orgraph
+./gradlew packageDistributionForCurrentOS
+```
+
+The executable will be created in `composeApp/build/compose/binaries/main/exe/`
