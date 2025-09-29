@@ -1,5 +1,6 @@
 package de.frinshy.orgraph.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +42,9 @@ fun TeacherListScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Top App Bar
         OrgraphTopAppBar(

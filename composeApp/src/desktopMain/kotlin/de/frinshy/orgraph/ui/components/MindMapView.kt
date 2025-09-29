@@ -6,9 +6,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,22 +50,44 @@ enum class NodeType {
 @Composable
 fun MindMapView(
     school: School,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPositionsReady: ((scopePositions: Map<String, Offset>, teacherPositions: Map<String, Offset>) -> Unit)? = null,
+    onMindMapDataReady: ((mindMapData: MindMapNode) -> Unit)? = null
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     var canvasSize by remember { mutableStateOf(Size.Zero) }
     var panOffset by remember { mutableStateOf(Offset.Zero) }
     var scale by remember { mutableStateOf(1f) }
     val textMeasurer = rememberTextMeasurer()
     
-    // Build mind map structure
-    val mindMapData = remember(school) {
-        buildMindMapData(school, textMeasurer)
+    // Build mind map structure with theme-aware colors
+    val mindMapData = remember(school, colorScheme) {
+        buildMindMapData(school, textMeasurer, colorScheme)
     }
     
-    // Layout nodes when canvas size changes
+    // Layout nodes immediately when canvas size is available or when mind map data changes
     LaunchedEffect(mindMapData, canvasSize) {
         if (canvasSize.width > 0 && canvasSize.height > 0) {
             layoutNodes(mindMapData, canvasSize)
+            // Call the callbacks with extracted data
+            onPositionsReady?.let { callback ->
+                val (scopePositions, teacherPositions) = extractPositionsFromMindMapData(mindMapData)
+                callback(scopePositions, teacherPositions)
+            }
+            onMindMapDataReady?.invoke(mindMapData)
+        }
+    }
+    
+    // Additional effect to handle theme changes specifically
+    LaunchedEffect(colorScheme) {
+        if (canvasSize.width > 0 && canvasSize.height > 0) {
+            layoutNodes(mindMapData, canvasSize)
+            // Call the callbacks with extracted data
+            onPositionsReady?.let { callback ->
+                val (scopePositions, teacherPositions) = extractPositionsFromMindMapData(mindMapData)
+                callback(scopePositions, teacherPositions)
+            }
+            onMindMapDataReady?.invoke(mindMapData)
         }
     }
     
@@ -102,8 +122,25 @@ fun MindMapView(
                     }
                 }
         ) {
-            canvasSize = size
-            drawMindMap(mindMapData, this, textMeasurer)
+            // Update canvas size and ensure nodes are laid out before drawing
+            if (canvasSize != size) {
+                canvasSize = size
+            }
+            
+            // Ensure nodes are properly laid out before drawing
+            if (size.width > 0 && size.height > 0) {
+                // Check if nodes need layout (recursive check for all nodes)
+                fun needsLayoutCheck(node: MindMapNode): Boolean {
+                    if (node.position == Offset.Zero) return true
+                    return node.children.any { needsLayoutCheck(it) }
+                }
+                
+                if (needsLayoutCheck(mindMapData)) {
+                    layoutNodes(mindMapData, size)
+                }
+                
+                drawMindMap(mindMapData, this, textMeasurer, colorScheme)
+            }
         }
         
         // Legend
@@ -216,7 +253,7 @@ fun MindMapLegend(
     }
 }
 
-private fun buildMindMapData(school: School, textMeasurer: TextMeasurer): MindMapNode {
+private fun buildMindMapData(school: School, textMeasurer: TextMeasurer, colorScheme: ColorScheme): MindMapNode {
     // Root node (school)
     val schoolTextStyle = TextStyle(
         fontSize = 16.sp,
@@ -232,7 +269,7 @@ private fun buildMindMapData(school: School, textMeasurer: TextMeasurer): MindMa
     val rootNode = MindMapNode(
         id = school.id,
         label = school.name,
-        color = Color(0xFF6750A4), // Primary color
+        color = colorScheme.primary, // Use theme primary color
         level = 0,
         size = schoolSize,
         type = NodeType.SCHOOL
@@ -268,7 +305,7 @@ private fun buildMindMapData(school: School, textMeasurer: TextMeasurer): MindMa
             MindMapNode(
                 id = teacher.id,
                 label = teacher.name,
-                color = Color(0xFF7D5260), // Tertiary color
+                color = colorScheme.tertiary, // Use theme tertiary color
                 level = 2,
                 size = teacherSize,
                 type = NodeType.TEACHER
@@ -335,32 +372,32 @@ private fun layoutNodes(rootNode: MindMapNode, canvasSize: Size) {
     }
 }
 
-private fun drawMindMap(rootNode: MindMapNode, drawScope: DrawScope, textMeasurer: TextMeasurer) {
+private fun drawMindMap(rootNode: MindMapNode, drawScope: DrawScope, textMeasurer: TextMeasurer, colorScheme: ColorScheme) {
     with(drawScope) {
         // Draw connections first
-        drawConnectionsRecursively(rootNode)
+        drawConnectionsRecursively(rootNode, colorScheme)
         
         // Draw nodes on top
-        drawNodesRecursively(rootNode, textMeasurer)
+        drawNodesRecursively(rootNode, textMeasurer, colorScheme)
     }
 }
 
-private fun DrawScope.drawConnectionsRecursively(node: MindMapNode) {
+private fun DrawScope.drawConnectionsRecursively(node: MindMapNode, colorScheme: ColorScheme) {
     // Draw lines to children
     node.children.forEach { child ->
         drawLine(
-            color = Color.Gray.copy(alpha = 0.6f),
+            color = colorScheme.outline.copy(alpha = 0.6f), // Use theme outline color
             start = node.position,
             end = child.position,
             strokeWidth = 2.dp.toPx()
         )
         
         // Recursively draw child connections
-        drawConnectionsRecursively(child)
+        drawConnectionsRecursively(child, colorScheme)
     }
 }
 
-private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: TextMeasurer) {
+private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: TextMeasurer, colorScheme: ColorScheme) {
     // Draw node circle
     drawCircle(
         color = node.color,
@@ -368,11 +405,11 @@ private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: Text
         center = node.position
     )
     
-    // Draw node border
+    // Draw node border with theme-aware colors
     val borderColor = when (node.type) {
-        NodeType.SCHOOL -> Color.White
-        NodeType.SCOPE -> Color.White.copy(alpha = 0.8f)
-        NodeType.TEACHER -> Color.White.copy(alpha = 0.6f)
+        NodeType.SCHOOL -> colorScheme.onPrimary
+        NodeType.SCOPE -> colorScheme.onSecondary.copy(alpha = 0.8f)
+        NodeType.TEACHER -> colorScheme.onTertiary.copy(alpha = 0.6f)
     }
     
     drawCircle(
@@ -382,22 +419,22 @@ private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: Text
         style = Stroke(width = 2.dp.toPx())
     )
     
-    // Draw text label
+    // Draw text label with theme-aware colors
     val textStyle = when (node.type) {
         NodeType.SCHOOL -> TextStyle(
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = colorScheme.onPrimary
         )
         NodeType.SCOPE -> TextStyle(
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.White
+            color = colorScheme.onSecondary
         )
         NodeType.TEACHER -> TextStyle(
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
-            color = Color.White
+            color = colorScheme.onTertiary
         )
     }
     
@@ -418,22 +455,90 @@ private fun DrawScope.drawNodesRecursively(node: MindMapNode, textMeasurer: Text
     
     // Draw children recursively
     node.children.forEach { child ->
-        drawNodesRecursively(child, textMeasurer)
+        drawNodesRecursively(child, textMeasurer, colorScheme)
     }
 }
 
-// Export function for creating PNG
-suspend fun exportMindMapToPng(
+// Export function for creating PNG with exact canvas matching
+suspend fun exportMindMapToPngExact(
     school: School,
+    colorScheme: ColorScheme,
     fileName: String = "${school.name}_mindmap"
 ): Boolean {
     return ExportUtil.exportMindMapToPng(
         drawFunction = { textMeasurer ->
-            // Use the exact same functions as the interactive view
-            val mindMapData = buildMindMapData(school, textMeasurer)
+            // Use the exact same functions as the interactive view with current theme
+            val mindMapData = buildMindMapData(school, textMeasurer, colorScheme)
             layoutNodes(mindMapData, size)
-            drawMindMap(mindMapData, this, textMeasurer)
+            drawMindMap(mindMapData, this, textMeasurer, colorScheme)
         },
         defaultFileName = fileName
     )
+}
+
+// Export function for creating PNG (legacy)
+suspend fun exportMindMapToPng(
+    school: School,
+    fileName: String = "${school.name}_mindmap"
+): Boolean {
+    // Create a default light color scheme for export
+    val exportColorScheme = lightColorScheme()
+    
+    return ExportUtil.exportMindMapToPng(
+        drawFunction = { textMeasurer ->
+            // Use the exact same functions as the interactive view
+            val mindMapData = buildMindMapData(school, textMeasurer, exportColorScheme)
+            layoutNodes(mindMapData, size)
+            drawMindMap(mindMapData, this, textMeasurer, exportColorScheme)
+        },
+        defaultFileName = fileName
+    )
+}
+
+// Export function for creating SVG with exact canvas matching
+suspend fun exportMindMapToSvgExact(
+    school: School,
+    mindMapData: MindMapNode,
+    colorScheme: androidx.compose.material3.ColorScheme,
+    fileName: String = "${school.name}_mindmap"
+): Boolean {
+    return ExportUtil.exportMindMapAsSvgWithExactMatching(
+        school = school,
+        mindMapData = mindMapData,
+        colorScheme = colorScheme,
+        defaultFileName = fileName
+    )
+}
+
+// Export function for creating SVG with exact positions
+suspend fun exportMindMapToSvg(
+    school: School,
+    scopePositions: Map<String, Offset>,
+    teacherPositions: Map<String, Offset>,
+    fileName: String = "${school.name}_mindmap"
+): Boolean {
+    return ExportUtil.exportMindMapAsSvgWithPositions(
+        school = school,
+        scopePositions = scopePositions,
+        teacherPositions = teacherPositions,
+        defaultFileName = fileName
+    )
+}
+
+// Helper function to extract positions from mind map data
+fun extractPositionsFromMindMapData(rootNode: MindMapNode): Pair<Map<String, Offset>, Map<String, Offset>> {
+    val scopePositions = mutableMapOf<String, Offset>()
+    val teacherPositions = mutableMapOf<String, Offset>()
+    
+    // Extract scope positions (direct children of root)
+    rootNode.children.forEach { scopeNode ->
+        scopePositions[scopeNode.id] = scopeNode.position
+        
+        // Extract teacher positions (children of scopes)
+        scopeNode.children.forEach { teacherNode ->
+            teacherPositions[teacherNode.id] = teacherNode.position
+        }
+    }
+    
+    return Pair(scopePositions, teacherPositions)
 }

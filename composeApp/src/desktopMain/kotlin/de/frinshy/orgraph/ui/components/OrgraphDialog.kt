@@ -1,8 +1,6 @@
 package de.frinshy.orgraph.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -31,17 +30,19 @@ fun OrgraphDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            modifier = modifier.widthIn(max = 500.dp),
+            modifier = modifier
+                .widthIn(max = 500.dp)
+                .heightIn(max = 600.dp), // Add maximum height
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 3.dp
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp)
-            ) {
-                // Header
+            Column {
+                // Fixed Header
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -57,16 +58,31 @@ fun OrgraphDialog(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
                 
-                // Content
-                content()
+                // Scrollable Content
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                ) {
+                    content()
+                }
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
                 
-                // Actions
+                // Fixed Actions
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.End,
                     content = actions
                 )
@@ -188,7 +204,7 @@ private fun ColorSelectionItem(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Selected",
-                tint = Color.White,
+                tint = if (color.luminance() > 0.5f) Color.Black else Color.White, // Dynamic tint based on color brightness
                 modifier = Modifier.size(16.dp)
             )
         }

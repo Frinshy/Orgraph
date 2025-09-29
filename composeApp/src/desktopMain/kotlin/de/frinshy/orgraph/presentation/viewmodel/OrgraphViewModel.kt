@@ -42,15 +42,21 @@ class OrgraphViewModel : ViewModel() {
     val selectedScope: StateFlow<Scope?> = _selectedScope.asStateFlow()
 
     private val _selectedTeacher = MutableStateFlow<Teacher?>(null)
-    val selectedTeacher: StateFlow<Teacher?> = _selectedTeacher.asStateFlow()    // Theme management
+    val selectedTeacher: StateFlow<Teacher?> = _selectedTeacher.asStateFlow()
+
+    // Theme management
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme.asStateFlow()
+    
+    // Track if settings have been loaded to prevent premature theme switching
+    private var settingsLoaded = false
     
     init {
         // Initialize data and settings from persistent storage
         viewModelScope.launch {
             repository.initializeData()
             loadSettings()
+            settingsLoaded = true
             
             // Debug: Print config directory location
             println("Orgraph config directory: ${getConfigDirectory()}")
@@ -206,6 +212,11 @@ class OrgraphViewModel : ViewModel() {
     
     // Theme management functions
     fun toggleTheme() {
+        if (!settingsLoaded) {
+            // Settings not loaded yet, ignore toggle to prevent inconsistent state
+            return
+        }
+        
         val newTheme = !_isDarkTheme.value
         _isDarkTheme.value = newTheme
         viewModelScope.launch {
@@ -217,6 +228,13 @@ class OrgraphViewModel : ViewModel() {
         _isDarkTheme.value = isDark
         viewModelScope.launch {
             saveSettings()
+        }
+    }
+    
+    // Force refresh the theme state (useful for testing)
+    fun refreshTheme() {
+        viewModelScope.launch {
+            loadSettings()
         }
     }
     

@@ -10,109 +10,113 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Material3 Expressive Color Scheme
+// Professional Color Scheme for Business Applications
+// Light theme uses neutral greys and blues for a clean, professional appearance
+// Dark theme uses proper Material Design dark colors with blue accents
+
+// Material 3 Expressive Color Scheme - Vibrant and dynamic
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF6750A4),
+    primary = Color(0xFF6750A4), // Vibrant purple - M3 Expressive signature
     onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFEADDFF),
-    onPrimaryContainer = Color(0xFF21005D),
-    secondary = Color(0xFF625B71),
+    primaryContainer = Color(0xFFE9DDFF), // Soft purple container
+    onPrimaryContainer = Color(0xFF22005D),
+    secondary = Color(0xFF625B71), // Rich purple-grey
     onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFE8DEF8),
-    onSecondaryContainer = Color(0xFF1D192B),
-    tertiary = Color(0xFF7D5260),
+    secondaryContainer = Color(0xFFE8DEF8), // Light lavender
+    onSecondaryContainer = Color(0xFF1E192B),
+    tertiary = Color(0xFF7E5260), // Warm berry
     onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFFFFD8E4),
-    onTertiaryContainer = Color(0xFF31111D),
+    tertiaryContainer = Color(0xFFFFD9E3), // Soft pink
+    onTertiaryContainer = Color(0xFF30111D),
     error = Color(0xFFBA1A1A),
     onError = Color(0xFFFFFFFF),
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
-    background = Color(0xFFFEF7FF),
-    onBackground = Color(0xFF1D1B20),
-    surface = Color(0xFFFEF7FF),
-    onSurface = Color(0xFF1D1B20),
-    surfaceVariant = Color(0xFFE7E0EC),
-    onSurfaceVariant = Color(0xFF49454F),
-    outline = Color(0xFF79747E),
-    outlineVariant = Color(0xFFCAC4D0),
+    background = Color(0xFFFDF8FF), // Subtle purple tint
+    onBackground = Color(0xFF1C1B1E),
+    surface = Color(0xFFFDF8FF), // Consistent with background
+    onSurface = Color(0xFF1C1B1E),
+    surfaceVariant = Color(0xFFE7E0EB), // Purple-tinted grey
+    onSurfaceVariant = Color(0xFF49454E),
+    outline = Color(0xFF7A757F),
+    outlineVariant = Color(0xFFCAC4CF),
     scrim = Color(0xFF000000),
-    inverseSurface = Color(0xFF322F35),
-    inverseOnSurface = Color(0xFFF5EFF7),
-    inversePrimary = Color(0xFFD0BCFF),
-    surfaceDim = Color(0xFFDED8E1),
-    surfaceBright = Color(0xFFFEF7FF),
+    inverseSurface = Color(0xFF313033),
+    inverseOnSurface = Color(0xFFF4F0F7),
+    inversePrimary = Color(0xFFCFBCFF),
+    surfaceDim = Color(0xFFDDD8E0),
+    surfaceBright = Color(0xFFFDF8FF),
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF8F2FA),
-    surfaceContainer = Color(0xFFF2ECF4),
-    surfaceContainerHigh = Color(0xFFECE6F0),
-    surfaceContainerHighest = Color(0xFFE6E0E9)
+    surfaceContainerLow = Color(0xFFF7F2FA),
+    surfaceContainer = Color(0xFFF1ECF4),
+    surfaceContainerHigh = Color(0xFFECE6EE),
+    surfaceContainerHighest = Color(0xFFE6E0E8)
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF371E73),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
+    primary = Color(0xFFCFBCFF), // Bright purple for dark theme
+    onPrimary = Color(0xFF22005D),
+    primaryContainer = Color(0xFF4F378A),
+    onPrimaryContainer = Color(0xFFE9DDFF),
+    secondary = Color(0xFFCCC2DC), // Soft lavender
+    onSecondary = Color(0xFF1E192B),
     secondaryContainer = Color(0xFF4A4458),
     onSecondaryContainer = Color(0xFFE8DEF8),
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF492532),
+    tertiary = Color(0xFFEFB8C8), // Warm pink
+    onTertiary = Color(0xFF30111D),
     tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = Color(0xFFFFD8E4),
+    onTertiaryContainer = Color(0xFFFFD9E3),
     error = Color(0xFFFFB4AB),
-    onError = Color(0xFF690005),
+    onError = Color(0xFF410002),
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6),
-    background = Color(0xFF141218),
-    onBackground = Color(0xFFE6E0E9),
-    surface = Color(0xFF141218),
-    onSurface = Color(0xFFE6E0E9),
-    surfaceVariant = Color(0xFF49454F),
-    onSurfaceVariant = Color(0xFFCAC4D0),
-    outline = Color(0xFF938F99),
-    outlineVariant = Color(0xFF49454F),
+    background = Color(0xFF141218), // Rich dark purple
+    onBackground = Color(0xFFE6E1E6),
+    surface = Color(0xFF141218), // Consistent with background
+    onSurface = Color(0xFFE6E1E6),
+    surfaceVariant = Color(0xFF49454E),
+    onSurfaceVariant = Color(0xFFCAC4CF),
+    outline = Color(0xFF948F99),
+    outlineVariant = Color(0xFF49454E),
     scrim = Color(0xFF000000),
-    inverseSurface = Color(0xFFE6E0E9),
-    inverseOnSurface = Color(0xFF322F35),
+    inverseSurface = Color(0xFFE6E1E6),
+    inverseOnSurface = Color(0xFF313033),
     inversePrimary = Color(0xFF6750A4),
     surfaceDim = Color(0xFF141218),
     surfaceBright = Color(0xFF3B383E),
     surfaceContainerLowest = Color(0xFF0F0D13),
-    surfaceContainerLow = Color(0xFF1D1B20),
-    surfaceContainer = Color(0xFF211F26),
-    surfaceContainerHigh = Color(0xFF2B2930),
-    surfaceContainerHighest = Color(0xFF36343B)
+    surfaceContainerLow = Color(0xFF1C1B1E),
+    surfaceContainer = Color(0xFF201F22),
+    surfaceContainerHigh = Color(0xFF2B292D),
+    surfaceContainerHighest = Color(0xFF363438)
 )
 
-// Material3 Expressive Typography
+// Material3 Expressive Typography - Enhanced contrast and expressiveness
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold, // More expressive weight
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp,
     ),
     displayMedium = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold, // More expressive weight
         fontSize = 45.sp,
         lineHeight = 52.sp,
         letterSpacing = 0.sp,
     ),
     displaySmall = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold, // Enhanced weight
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp,
     ),
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold, // Enhanced weight
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp,
@@ -196,13 +200,13 @@ val Typography = Typography(
     )
 )
 
-// Material3 Expressive Shapes
+// Material3 Expressive Shapes - More rounded and dynamic
 val Shapes = Shapes(
-    extraSmall = RoundedCornerShape(4.dp),
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(28.dp)
+    extraSmall = RoundedCornerShape(8.dp), // Increased from 4dp
+    small = RoundedCornerShape(12.dp), // Increased from 8dp
+    medium = RoundedCornerShape(16.dp), // Increased from 12dp
+    large = RoundedCornerShape(24.dp), // Increased from 16dp
+    extraLarge = RoundedCornerShape(32.dp) // Increased from 28dp
 )
 
 @Composable

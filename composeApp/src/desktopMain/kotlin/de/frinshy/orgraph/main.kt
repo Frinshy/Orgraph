@@ -35,7 +35,7 @@ fun main() = application {
         
         WindowStyle(
             isDarkTheme = isDarkTheme,
-            backdropType = WindowBackdrop.Mica
+            backdropType = WindowBackdrop.Default // Using Default for better compatibility
         )
 
         App()

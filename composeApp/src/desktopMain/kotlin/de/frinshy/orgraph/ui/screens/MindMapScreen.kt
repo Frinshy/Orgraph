@@ -1,18 +1,17 @@
 package de.frinshy.orgraph.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import de.frinshy.orgraph.data.models.School
 import de.frinshy.orgraph.presentation.viewmodel.OrgraphViewModel
@@ -33,9 +32,18 @@ fun MindMapScreen(
     val showEditDialog by viewModel.showEditTeacherDialog.collectAsState()
     val selectedTeacher by viewModel.selectedTeacher.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val currentColorScheme = MaterialTheme.colorScheme
+    
+    // State to track positions and mindmap data for exports
+    var scopePositions by remember { mutableStateOf<Map<String, Offset>>(emptyMap()) }
+    var teacherPositions by remember { mutableStateOf<Map<String, Offset>>(emptyMap()) }
+    var mindMapData by remember { mutableStateOf<de.frinshy.orgraph.ui.components.MindMapNode?>(null) }
+    var showExportMenu by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Top App Bar
         OrgraphTopAppBar(
@@ -43,18 +51,48 @@ fun MindMapScreen(
             actions = {
                 // Export button (only show when there are teachers)
                 if (school.teachers.isNotEmpty()) {
-                    OrgraphIconButton(
-                        onClick = { 
-                            coroutineScope.launch {
-                                exportMindMapToPng(
-                                    school = school,
-                                    fileName = "${school.name}_mindmap"
-                                )
-                            }
-                        },
-                        icon = Icons.Default.Download,
-                        contentDescription = "Export mind map as PNG"
-                    )
+                    Box {
+                        OrgraphIconButton(
+                            onClick = { showExportMenu = !showExportMenu },
+                            icon = Icons.Default.Download,
+                            contentDescription = "Export mind map"
+                        )
+                        
+                        DropdownMenu(
+                            expanded = showExportMenu,
+                            onDismissRequest = { showExportMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Export as PNG") },
+                                onClick = {
+                                    showExportMenu = false
+                                    coroutineScope.launch {
+                                        exportMindMapToPngExact(
+                                            school = school,
+                                            colorScheme = currentColorScheme,
+                                            fileName = "${school.name}_mindmap"
+                                        )
+                                    }
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Export as SVG") },
+                                onClick = {
+                                    showExportMenu = false
+                                    coroutineScope.launch {
+                                        mindMapData?.let { data ->
+                                            exportMindMapToSvgExact(
+                                                school = school,
+                                                mindMapData = data,
+                                                colorScheme = currentColorScheme,
+                                                fileName = "${school.name}_mindmap"
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
                 
                 // Export config button
@@ -139,7 +177,14 @@ fun MindMapScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 MindMapView(
                     school = school,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    onPositionsReady = { scopes, teachers ->
+                        scopePositions = scopes
+                        teacherPositions = teachers
+                    },
+                    onMindMapDataReady = { data ->
+                        mindMapData = data
+                    }
                 )
 
                 // Floating Action Button
