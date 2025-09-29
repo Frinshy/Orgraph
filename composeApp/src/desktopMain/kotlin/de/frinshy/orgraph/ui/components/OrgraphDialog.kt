@@ -32,12 +32,14 @@ fun OrgraphDialog(
         Surface(
             modifier = modifier
                 .widthIn(max = 500.dp)
-                .heightIn(max = 600.dp), // Add maximum height
+                .heightIn(max = 700.dp), // Increased from 600dp to give more space
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 3.dp
         ) {
-            Column {
+            Column(
+                modifier = Modifier.fillMaxHeight()
+            ) {
                 // Fixed Header
                 Row(
                     modifier = Modifier
@@ -63,14 +65,18 @@ fun OrgraphDialog(
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 
-                // Scrollable Content
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                // Scrollable Content - Takes available space but doesn't overlap actions
+                Box(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    content()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 24.dp, vertical = 16.dp)
+                    ) {
+                        content()
+                    }
                 }
                 
                 HorizontalDivider(
@@ -78,14 +84,22 @@ fun OrgraphDialog(
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 
-                // Fixed Actions
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.End,
-                    content = actions
-                )
+                // Fixed Actions - Always accessible at bottom
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    tonalElevation = 3.dp, // Increased elevation to ensure it's on top
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 2.dp // Add shadow for visual separation
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 20.dp), // Increased vertical padding
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = actions
+                    )
+                }
             }
         }
     }

@@ -32,9 +32,22 @@ fun EditTeacherDialog(
     var phone by remember { mutableStateOf(teacher.phone) }
     var description by remember { mutableStateOf(teacher.description) }
     var experience by remember { mutableStateOf(teacher.experience.toString()) }
-    var selectedScopes by remember { mutableStateOf(teacher.scopes.toSet()) }
+    var selectedScopes by remember { 
+        mutableStateOf(
+            // Initialize with scopes from availableScopes that match teacher's scope IDs
+            // This ensures consistent object references
+            availableScopes.filter { availableScope ->
+                teacher.scopes.any { teacherScope -> teacherScope.id == availableScope.id }
+            }.toSet()
+        )
+    }
+    
+    // Create a set of selected scope IDs for more reliable comparison
+    val selectedScopeIds by remember { derivedStateOf { selectedScopes.map { it.id }.toSet() } }
 
-    val isValidForm = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank()
+    // For editing existing teachers, only name is required
+    // Email and phone can be optional since they might not have been entered initially
+    val isValidForm = name.isNotBlank()
     val experienceInt = experience.toIntOrNull() ?: 0
 
     OrgraphDialog(
@@ -62,6 +75,9 @@ fun EditTeacherDialog(
                     }
                 },
                 enabled = isValidForm,
+                modifier = Modifier
+                    .heightIn(min = 48.dp) // Ensure minimum touch target
+                    .fillMaxWidth(), // Make button full width for easier clicking
                 colors = ButtonDefaults.filledTonalButtonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -122,7 +138,7 @@ fun EditTeacherDialog(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email *") },
+                label = { Text("Email") }, // Removed * since it's now optional for editing
                 placeholder = { Text("teacher@school.edu") },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
@@ -133,7 +149,7 @@ fun EditTeacherDialog(
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
-                label = { Text("Phone *") },
+                label = { Text("Phone") }, // Removed * since it's now optional for editing
                 placeholder = { Text("+1 234 567 8900") },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
@@ -171,12 +187,14 @@ fun EditTeacherDialog(
                     items(availableScopes) { scope ->
                         ScopeSelectionItem(
                             scope = scope,
-                            isSelected = selectedScopes.contains(scope),
+                            isSelected = selectedScopeIds.contains(scope.id),
                             onSelectionChanged = { isSelected ->
                                 selectedScopes = if (isSelected) {
+                                    // Add scope from availableScopes to ensure we use the same reference
                                     selectedScopes + scope
                                 } else {
-                                    selectedScopes - scope
+                                    // Remove by ID to avoid reference issues
+                                    selectedScopes.filter { it.id != scope.id }.toSet()
                                 }
                             }
                         )

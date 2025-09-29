@@ -215,7 +215,7 @@ fun OrgraphIconButton(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            modifier = Modifier.size(22.dp) // Slightly larger icons
+            modifier = Modifier.size(20.dp) // Reduced from 22dp
         )
     }
 }
@@ -249,15 +249,15 @@ fun OrgraphTopAppBar(
                         painter = painterResource("images/icon.png"),
                         contentDescription = "App Icon",
                         modifier = Modifier
-                            .size(28.dp) // Slightly larger for more presence
-                            .padding(end = 12.dp) // More spacing
+                            .size(20.dp) // Reduced from 24dp
+                            .padding(end = 6.dp) // Reduced from 8dp
                             .graphicsLayer { rotationZ = iconRotation },
                         tint = MaterialTheme.colorScheme.primary // Color the icon
                     )
                 }
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium, // Reduced from titleLarge
                     fontWeight = FontWeight.Bold // More expressive weight
                 )
             }

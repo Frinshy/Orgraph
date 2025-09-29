@@ -12,14 +12,10 @@ A desktop app for organizing people and groups. Manage staff, assign roles, and 
 
 ## Getting Started
 
-### Download
-
-Get the latest release from the [releases page](../../releases) or build from source.
-
 ### Building from Source
 
 ```bash
-git clone https://github.com/FrinshHD/Orgraph.git
+git clone https://github.com/Frinshy/Orgraph.git
 cd Orgraph
 ./gradlew packageDistributionForCurrentOS
 ```
