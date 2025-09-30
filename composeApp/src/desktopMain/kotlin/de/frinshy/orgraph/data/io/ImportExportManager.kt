@@ -29,7 +29,7 @@ class ImportExportManager {
         return withContext(Dispatchers.IO) {
             try {
                 val backup = OrgraphBackup(
-                    version = "1.0.0",
+                    version = "1.0.1",
                     exportDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     school = school
                 )

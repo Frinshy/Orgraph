@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 
 @Serializable
 data class OrgraphBackup(
-    val version: String = "1.0.0",
+    val version: String = "1.0.1",
     val exportDate: String = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
     val school: School
 )

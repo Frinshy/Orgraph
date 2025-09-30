@@ -53,7 +53,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb, TargetFormat.AppImage)
             packageName = "Orgraph"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
             windows {
                 shortcut = true
                 menuGroup = packageName

@@ -9,5 +9,5 @@ data class AppSettings(
     val windowHeight: Int = 720,
     val lastViewMode: String = "LIST", // LIST or MINDMAP
     val exportDirectory: String = "",
-    val appVersion: String = "1.0.0"
+    val appVersion: String = "1.0.1"
 )
