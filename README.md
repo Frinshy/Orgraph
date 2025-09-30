@@ -3,6 +3,7 @@
 A desktop app for organizing people and groups. Manage staff, assign roles, and visualize relationships with interactive mind maps.
 
 <img width="1266" height="713" alt="image" src="https://github.com/user-attachments/assets/9f0bbe28-13f9-40e5-b6f1-fe8f61309293" />
+<img width="1266" height="713" alt="image" src="https://github.com/user-attachments/assets/99316984-f91d-40ea-9564-ddf7ad8344bd" />
 
 ## Features
 
