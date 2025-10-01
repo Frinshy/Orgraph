@@ -15,7 +15,7 @@ class SchoolRepository {
         School(
             id = "1",
             name = "Orgraph",
-            address = "123 Education Street"
+            backgroundImage = ""
         )
     )
     val school: StateFlow<School> = _school.asStateFlow()
@@ -99,6 +99,11 @@ class SchoolRepository {
         localDataManager.saveSchool(newSchool)
     }
     
+    suspend fun updateSchool(school: School) {
+        _school.value = school
+        localDataManager.saveSchool(school)
+    }
+    
     suspend fun saveSchool(school: School) {
         _school.value = school
         localDataManager.saveSchool(school)
@@ -109,7 +114,7 @@ class SchoolRepository {
         _school.value = School(
             id = "1",
             name = "Orgraph",
-            address = "123 Education Street"
+            backgroundImage = ""
         )
     }
 }

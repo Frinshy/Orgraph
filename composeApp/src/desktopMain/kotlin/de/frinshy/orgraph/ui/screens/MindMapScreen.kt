@@ -38,6 +38,7 @@ fun MindMapScreen(
 ) {
     val showAddDialog by viewModel.showAddTeacherDialog.collectAsState()
     val showEditDialog by viewModel.showEditTeacherDialog.collectAsState()
+    val showEditSchoolDialog by viewModel.showEditSchoolDialog.collectAsState()
     val selectedTeacher by viewModel.selectedTeacher.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val currentColorScheme = MaterialTheme.colorScheme
@@ -99,6 +100,7 @@ fun MindMapScreen(
                                         exportMindMapToPngExact(
                                             school = school,
                                             colorScheme = currentColorScheme,
+                                            configDirectory = viewModel.getConfigDirectory(),
                                             fileName = "${school.name}_mindmap"
                                         )
                                     }
@@ -280,10 +282,22 @@ fun MindMapScreen(
                     MindMapView(
                         school = school,
                         modifier = Modifier.fillMaxSize(),
+                        configDirectory = viewModel.getConfigDirectory(),
                         onPositionsReady = { scopes, teachers ->
                         },
                         onMindMapDataReady = { data ->
                             mindMapData = data
+                        },
+                        onSchoolClick = {
+                            viewModel.showEditSchoolDialog()
+                        },
+                        onScopeClick = { scopeId ->
+                            val scope = school.scopes.find { it.id == scopeId }
+                            scope?.let { viewModel.showEditScopeDialog(it) }
+                        },
+                        onTeacherClick = { teacherId ->
+                            val teacher = school.teachers.find { it.id == teacherId }
+                            teacher?.let { viewModel.showEditTeacherDialog(it) }
                         }
                     )
 
@@ -372,5 +386,17 @@ fun MindMapScreen(
                 }
             )
         }
+    }
+
+    // Edit School Dialog
+    if (showEditSchoolDialog) {
+        EditSchoolDialog(
+            school = school,
+            configDirectory = viewModel.getConfigDirectory(),
+            onDismiss = { viewModel.hideEditSchoolDialog() },
+            onUpdateSchool = { updatedSchool ->
+                viewModel.updateSchool(updatedSchool)
+            }
+        )
     }
 }

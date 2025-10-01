@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class School(
     val id: String,
     val name: String,
-    val address: String = "",
+    val backgroundImage: String = "", // path to background image file
     val teachers: List<Teacher> = emptyList(),
     val scopes: List<Scope> = emptyList()
 ) {

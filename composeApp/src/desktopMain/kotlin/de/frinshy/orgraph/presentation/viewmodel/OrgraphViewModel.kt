@@ -38,6 +38,9 @@ class OrgraphViewModel : ViewModel() {
     private val _showEditScopeDialog = MutableStateFlow(false)
     val showEditScopeDialog: StateFlow<Boolean> = _showEditScopeDialog.asStateFlow()
     
+    private val _showEditSchoolDialog = MutableStateFlow(false)
+    val showEditSchoolDialog: StateFlow<Boolean> = _showEditSchoolDialog.asStateFlow()
+    
     private val _selectedScope = MutableStateFlow<Scope?>(null)
     val selectedScope: StateFlow<Scope?> = _selectedScope.asStateFlow()
 
@@ -108,6 +111,14 @@ class OrgraphViewModel : ViewModel() {
     fun hideEditScopeDialog() {
         _selectedScope.value = null
         _showEditScopeDialog.value = false
+    }
+    
+    fun showEditSchoolDialog() {
+        _showEditSchoolDialog.value = true
+    }
+    
+    fun hideEditSchoolDialog() {
+        _showEditSchoolDialog.value = false
     }
     
     fun selectTeacher(teacher: Teacher?) {
@@ -244,6 +255,13 @@ class OrgraphViewModel : ViewModel() {
         viewModelScope.launch {
             repository.updateScope(scope)
             hideEditScopeDialog()
+        }
+    }
+    
+    fun updateSchool(school: School) {
+        viewModelScope.launch {
+            repository.updateSchool(school)
+            hideEditSchoolDialog()
         }
     }
     

@@ -18,6 +18,7 @@ object ImageUtils {
     private const val IMAGES_FOLDER = "images"
     private const val TEACHERS_FOLDER = "teachers"
     private const val SCOPES_FOLDER = "scopes"
+    private const val SCHOOLS_FOLDER = "schools"
     
     /**
      * Opens a file dialog to select an image file
@@ -46,8 +47,8 @@ object ImageUtils {
     /**
      * Copies an image to the app's images directory and returns the relative path
      * @param sourceImagePath The source image file path
-     * @param targetType Either "teacher" or "scope"
-     * @param entityId The ID of the teacher or scope
+     * @param targetType Either "teacher", "scope", or "school"
+     * @param entityId The ID of the teacher, scope, or school
      * @return The relative path to the copied image, or null if failed
      */
     fun copyImageToAppDirectory(
@@ -64,6 +65,7 @@ object ImageUtils {
             val targetFolder = when (targetType) {
                 "teacher" -> TEACHERS_FOLDER
                 "scope" -> SCOPES_FOLDER
+                "school" -> SCHOOLS_FOLDER
                 else -> return null
             }
             
